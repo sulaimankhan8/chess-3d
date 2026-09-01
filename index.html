@@ -292,21 +292,30 @@
     .game-topbar {
       position: fixed;
       top: max(8px, env(safe-area-inset-top));
-      left: 8px;
-      right: 8px;
+      left: 12px;
+      right: 12px;
       z-index: 30;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 8px 12px;
-      background: rgba(9, 12, 18, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      flex-wrap: wrap;
+      gap: 12px;
+      padding: 8px 14px;
+      background: #0e121e;
+      border-radius: 12px;
+      border: 1px solid #1c2438;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-divider {
+      width: 1px;
+      height: 18px;
+      background: #1c2438;
     }
 
     .game-topbar .brand {
@@ -316,112 +325,167 @@
     }
 
     .game-topbar .brand-icon {
-      color: #b89a4e;
+      color: #d4b262;
       display: flex;
     }
 
     .game-topbar .brand h1 {
       font-family: 'Outfit', sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
-      color: #c8b882;
-      letter-spacing: 0.5px;
+      color: #d4b262;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+    }
+
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .segmented-control {
+      display: flex;
+      align-items: center;
+      background: #141926;
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid #222b3e;
+      height: 36px;
+      box-sizing: border-box;
+      gap: 2px;
+    }
+
+    .segmented-control .btn {
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      padding: 0 10px;
+      height: 28px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .segmented-control .btn:hover {
+      background: #1e2638;
+      color: #f1f5f9;
     }
 
     .game-topbar .top-controls {
       display: flex;
       align-items: center;
-      gap: 5px;
-      flex-wrap: wrap;
+      gap: 8px;
     }
 
     /* ============================================================
-       BUTTONS
+       BUTTONS & CONTROLS DESIGN SYSTEM
        ============================================================ */
     .btn {
-      border: none;
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-weight: 700;
-      font-size: 11px;
+      border: 1px solid #222b3e;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-weight: 600;
+      font-size: 12px;
+      height: 36px;
+      box-sizing: border-box;
       cursor: pointer;
-      transition: all 0.15s ease;
-      background: rgba(255, 255, 255, 0.06);
-      color: #c8c4ba;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      background: #141926;
+      color: #cbd5e1;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      min-height: 36px;
+      justify-content: center;
+      gap: 6px;
       touch-action: manipulation;
       -webkit-appearance: none;
       line-height: 1;
     }
 
-    .btn:active:not(:disabled) { transform: scale(0.96); opacity: 0.8; }
-    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    .btn-primary {
-      background: rgba(212, 178, 98, 0.2);
-      color: #d4b262;
-      border-color: rgba(212, 178, 98, 0.25);
+    .btn:hover:not(:disabled) {
+      background: #1e2638;
+      border-color: #2e3b56;
+      color: #ffffff;
     }
 
-    .btn-primary:active:not(:disabled) { background: rgba(212,178,98,0.3); }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-primary {
+      background: #d4b262;
+      color: #0b0e14;
+      border-color: #d4b262;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #e0c175;
+      color: #0b0e14;
+      border-color: #e0c175;
+    }
+
+    .btn-primary:active:not(:disabled) { background: #c8a34f; }
 
     .btn-icon {
-      padding: 8px;
-      min-width: 36px;
+      padding: 0;
+      width: 36px;
+      height: 36px;
       justify-content: center;
     }
 
     .mode-select-wrap {
       display: flex;
       align-items: center;
-      gap: 4px;
-      color: #6b7894;
-      font-size: 10px;
+      gap: 6px;
+      color: #64748b;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
     .mode-select {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: #c8c4ba;
-      border-radius: 10px;
-      padding: 6px 10px;
-      font-size: 11px;
+      background: #141926;
+      border: 1px solid #222b3e;
+      color: #cbd5e1;
+      border-radius: 8px;
+      padding: 0 10px;
+      font-size: 12px;
       font-weight: 600;
+      height: 36px;
+      box-sizing: border-box;
       outline: none;
       cursor: pointer;
-      min-height: 36px;
       -webkit-appearance: none;
       font-family: 'Inter', sans-serif;
     }
 
-    .mode-select option { background: #0f1320; color: #c8c4ba; }
+    .mode-select:hover {
+      border-color: #2e3b56;
+      background: #1e2638;
+    }
+
+    .mode-select option { background: #0f1320; color: #cbd5e1; }
 
     .turn-indicator {
       display: flex;
       align-items: center;
-      gap: 5px;
-      padding: 5px 10px;
-      border-radius: 20px;
-      background: rgba(212, 178, 98, 0.08);
-      border: 1px solid rgba(212, 178, 98, 0.15);
-      font-size: 11px;
-      font-weight: 700;
-      color: #c8b882;
+      gap: 6px;
+      padding: 0 12px;
+      height: 36px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      background: #141926;
+      border: 1px solid #222b3e;
+      font-size: 12px;
+      font-weight: 600;
+      color: #d4b262;
     }
 
     .turn-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #b89a4e;
-      box-shadow: 0 0 6px rgba(184, 154, 78, 0.4);
+      background: #d4b262;
     }
 
     /* ============================================================
@@ -439,8 +503,8 @@
       gap: 6px;
       padding: 8px 10px;
       padding-bottom: max(8px, env(safe-area-inset-bottom));
-      background: rgba(9, 12, 18, 0.95);
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: #0b0e15;
+      border-top: 1px solid #1a2233;
     }
 
     .mobile-bottom-bar .btn {
@@ -448,7 +512,7 @@
       justify-content: center;
       font-size: 10px;
       padding: 10px 4px;
-      min-height: 44px;
+      min-height: 42px;
       flex-direction: column;
       gap: 2px;
     }
@@ -460,21 +524,21 @@
        ============================================================ */
     .bottom-status {
       position: fixed;
-      bottom: 68px;
+      bottom: 14px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(9, 12, 18, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 8px 18px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 12px;
-      font-weight: 600;
-      z-index: 25;
+      background: #0d111a;
+      padding: 6px 16px;
+      border-radius: 16px;
+      border: 1px solid #1c2436;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      z-index: 5;
       pointer-events: none;
       text-align: center;
-      color: #9aa3b5;
+      color: #94a3b8;
       max-width: calc(100vw - 32px);
       white-space: nowrap;
     }
@@ -501,6 +565,86 @@
     }
 
     /* ============================================================
+       2D FLAT CHESSBOARD VIEW
+       ============================================================ */
+    .board2d-wrap {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    .board2d {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      width: min(84vw, min(70vh, 540px));
+      height: min(84vw, min(70vh, 540px));
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.1);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .sq2d {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .sq2d.light { background-color: #e8d5a3; color: #3d2314; }
+    .sq2d.dark { background-color: #3d2314; color: #e8d5a3; }
+
+    .sq2d.selected { background-color: #d4b262 !important; }
+    .sq2d.last-move { background-color: rgba(212, 178, 98, 0.45) !important; }
+    .sq2d.check { background-color: #e05555 !important; }
+
+    .sq2d .piece2d {
+      width: 88%;
+      height: 88%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .sq2d .piece2d svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .sq2d .dot2d {
+      position: absolute;
+      width: 28%;
+      height: 28%;
+      border-radius: 50%;
+      background: rgba(212, 178, 98, 0.65);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .sq2d .ring2d {
+      position: absolute;
+      width: 84%;
+      height: 84%;
+      border: 4px solid rgba(224, 112, 112, 0.7);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* ============================================================
        SIDE PANELS (desktop only, >1100px)
        ============================================================ */
     .stats-panel {
@@ -516,11 +660,10 @@
       flex-direction: column;
       gap: 10px;
       padding: 14px;
-      border-radius: 16px;
-      background: rgba(8, 11, 16, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      border-radius: 14px;
+      background: #111522;
+      border: 1px solid #1e2638;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
     }
 
     .stats-panel-left { left: 12px; }
@@ -530,7 +673,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid #1e2638;
       padding-bottom: 8px;
     }
 
@@ -538,33 +681,34 @@
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
       font-size: 12px;
-      color: #b89a4e;
+      color: #d4b262;
       letter-spacing: 0.5px;
     }
 
     .moves-badge {
-      background: rgba(255, 255, 255, 0.04);
+      background: #161b2c;
+      border: 1px solid #20293d;
       padding: 2px 8px;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
-      color: #6b7894;
+      color: #94a3b8;
     }
 
     .player-card {
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 12px;
+      background: #161b2c;
+      border-radius: 10px;
       padding: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      border: 1px solid #20293d;
       display: flex;
       flex-direction: column;
       gap: 5px;
-      transition: all 0.25s ease;
+      transition: border-color 0.25s ease, background 0.25s ease;
     }
 
     .player-card.active-turn {
-      border-color: rgba(212, 178, 98, 0.25);
-      background: rgba(212, 178, 98, 0.04);
+      border-color: #d4b262;
+      background: #1a2034;
     }
 
     .player-card-header {
@@ -579,16 +723,16 @@
       gap: 5px;
       font-weight: 700;
       font-size: 12px;
-      color: #c8c4ba;
+      color: #cbd5e1;
     }
 
     .player-avatar { font-size: 14px; }
 
     .lead-badge {
-      background: rgba(142, 241, 178, 0.15);
+      background: rgba(123, 212, 160, 0.15);
       color: #7bd4a0;
       padding: 2px 6px;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 10px;
       font-weight: 800;
     }
@@ -603,9 +747,10 @@
     }
 
     .captured-chip {
-      background: rgba(255, 255, 255, 0.05);
+      background: #101422;
+      border: 1px solid #1c2436;
       padding: 1px 5px;
-      border-radius: 6px;
+      border-radius: 5px;
       line-height: 1;
       display: inline-flex;
       align-items: center;
@@ -613,7 +758,7 @@
       font-size: 12px;
     }
 
-    .empty-captures { color: #3d4556; font-size: 10px; }
+    .empty-captures { color: #475569; font-size: 10px; }
 
     .material-bar-wrap {
       display: flex;
@@ -626,7 +771,7 @@
       justify-content: space-between;
       font-size: 9px;
       font-weight: 700;
-      color: #4f5a72;
+      color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -634,22 +779,22 @@
     .material-bar-track {
       height: 4px;
       width: 100%;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 10px;
+      background: #101422;
+      border-radius: 6px;
       overflow: hidden;
       display: flex;
     }
 
     .material-bar-fill-white {
       height: 100%;
-      background: linear-gradient(90deg, #c8b882, #e8e0d0);
+      background: #d4b262;
       width: 50%;
       transition: width 0.4s ease;
     }
 
     .material-bar-fill-black {
       height: 100%;
-      background: linear-gradient(90deg, #4f5a72, #8a7bc8);
+      background: #475569;
       width: 50%;
       transition: width 0.4s ease;
     }
@@ -658,7 +803,7 @@
       font-family: 'Outfit', sans-serif;
       font-weight: 700;
       font-size: 12px;
-      color: #b89a4e;
+      color: #d4b262;
       display: flex;
       align-items: center;
       gap: 5px;
@@ -669,31 +814,32 @@
       min-height: 160px;
       overflow-y: auto;
       font-size: 11px;
-      color: #8a95b5;
+      color: #94a3b8;
       display: flex;
       flex-direction: column;
       gap: 3px;
       padding-right: 3px;
     }
 
-    .move-log::-webkit-scrollbar { width: 2px; }
-    .move-log::-webkit-scrollbar-thumb { background: rgba(212,178,98,0.2); border-radius: 4px; }
+    .move-log::-webkit-scrollbar { width: 3px; }
+    .move-log::-webkit-scrollbar-thumb { background: #26324a; border-radius: 4px; }
 
     .move-log div {
-      background: rgba(255, 255, 255, 0.02);
+      background: #161b2c;
       padding: 4px 8px;
-      border-radius: 8px;
+      border-radius: 6px;
       font-family: 'SF Mono', 'Fira Code', monospace;
-      border-left: 2px solid rgba(212, 178, 98, 0.2);
+      border-left: 2px solid #d4b262;
       font-size: 10px;
+      color: #cbd5e1;
     }
 
     .quick-status-card {
       margin-top: auto;
       padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      background: #161b2c;
+      border: 1px solid #20293d;
       display: flex;
       flex-direction: column;
       gap: 3px;
@@ -702,14 +848,14 @@
     .quick-status-label {
       font-size: 8px;
       letter-spacing: 1.5px;
-      color: #3d4556;
+      color: #64748b;
       font-weight: 800;
       text-transform: uppercase;
     }
 
     #sideStatusText {
       font-size: 11px;
-      color: #b89a4e;
+      color: #d4b262;
       font-weight: 700;
     }
 
@@ -888,7 +1034,7 @@
     @media (min-width: 1101px) {
       .mobile-bottom-bar { display: none; }
       .stats-panel { display: flex; }
-      .bottom-status { bottom: 24px; }
+      .bottom-status { bottom: 14px; }
       .camera-hint { top: 86px; }
       .game-topbar {
         left: 12px; right: 12px;
@@ -977,37 +1123,10 @@
         display: block;
       }
       
-      /* Floating action buttons */
-      .mobile-floating-actions {
-        position: fixed;
-        right: 16px;
-        bottom: 80px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        z-index: 40;
+      #newGameBtn, #undoBtn {
+        display: none !important;
       }
-      .floating-btn {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: rgba(9, 12, 18, 0.92);
-        border: 1px solid rgba(215, 185, 111, 0.25);
-        color: #e8d5a3;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        -webkit-appearance: none;
-      }
-      .floating-btn:active {
-        transform: scale(0.92);
-        background: rgba(215, 185, 111, 0.15);
-      }
+
     }
 
     /* ============================================================
@@ -1205,14 +1324,38 @@
        ============================================================ -->
   <div id="gameScreen" class="screen">
     <div class="game-topbar">
-      <div class="brand">
-        <button class="btn btn-icon" id="homeBtn" title="Home">
+      <!-- Left: Home & Brand Identity -->
+      <div class="topbar-left">
+        <button class="btn btn-icon" id="homeBtn" title="Return to Main Menu">
           <span class="icon icon-md"><svg><use href="#ico-home"/></svg></span>
         </button>
-        <span class="brand-icon"><span class="icon icon-md"><svg><use href="#ico-pawn"/></svg></span></span>
-        <h1>CHESS ROYALE</h1>
+        <div class="topbar-divider"></div>
+        <div class="brand">
+          <span class="brand-icon"><span class="icon icon-md"><svg><use href="#ico-crown"/></svg></span></span>
+          <h1>CHESS ROYALE</h1>
+        </div>
       </div>
+
+      <!-- Center: View & Details Controls -->
+      <div class="topbar-center">
+        <div class="segmented-control">
+          <button class="btn" id="viewToggleBtn" title="Toggle 2D/3D View">
+            <span class="icon icon-sm"><svg><use id="viewToggleIcon" href="#ico-grid"/></svg></span>
+            <span class="btn-label">2D/3D</span>
+          </button>
+          <button class="btn" id="matchDetailsBtn" title="Match Details">
+            <span class="icon icon-sm"><svg><use href="#ico-scroll"/></svg></span>
+            <span class="btn-label">Details</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Game Mode & Actions -->
       <div class="top-controls">
+        <span class="turn-indicator" id="turnPill">
+          <span class="turn-dot"></span>
+          <span id="turnPillText">White to move</span>
+        </span>
         <label class="mode-select-wrap">
           <span>Mode</span>
           <select id="modeSelect" class="mode-select">
@@ -1221,10 +1364,6 @@
             <option value="ai-hard">Hard</option>
           </select>
         </label>
-        <span class="turn-indicator" id="turnPill">
-          <span class="turn-dot"></span>
-          <span id="turnPillText">White</span>
-        </span>
         <button id="newGameBtn" class="btn btn-primary">
           <span class="icon icon-sm"><svg><use href="#ico-refresh"/></svg></span> New
         </button>
@@ -1237,6 +1376,11 @@
     <div class="camera-hint" aria-hidden="true">
       <span class="icon icon-sm"><svg><use href="#ico-drag"/></svg></span>
       Drag to rotate · Pinch to zoom
+    </div>
+
+    <!-- 2D Board Overlay -->
+    <div id="board2d-wrap" class="board2d-wrap" style="display:none;">
+      <div id="board2d" class="board2d"></div>
     </div>
 
     <!-- Left Stats (desktop / mobile overlay) -->
@@ -1296,15 +1440,7 @@
       </button>
     </aside>
 
-    <!-- Floating Action Buttons & Backdrop for Mobile -->
-    <div class="mobile-floating-actions">
-      <button id="mobileViewToggleBtn" class="floating-btn" title="Toggle 2D/3D View">
-        <span class="icon"><svg><use id="mobileViewToggleIcon" href="#ico-grid"/></svg></span>
-      </button>
-      <button id="mobileStatsToggleBtn" class="floating-btn" title="Match Details">
-        <span class="icon"><svg><use href="#ico-scroll"/></svg></span>
-      </button>
-    </div>
+    <!-- Backdrop for Mobile Side Panel -->
     <div id="mobileStatsBackdrop" class="mobile-stats-backdrop"></div>
 
     <div class="bottom-status" id="statusText">White to move. Select a piece.</div>
@@ -1422,10 +1558,21 @@
       statsBackdropEl?.classList.remove('active');
     }
 
-    document.getElementById('mobileStatsToggleBtn')?.addEventListener('click', () => {
-      statsLeftEl?.classList.add('mobile-active');
-      statsBackdropEl?.classList.add('active');
-    });
+    function openMatchDetails() {
+      if (window.innerWidth <= 1100) {
+        statsLeftEl?.classList.add('mobile-active');
+        statsBackdropEl?.classList.add('active');
+      } else {
+        if (statsLeftEl && statsRightEl) {
+          const isHidden = window.getComputedStyle(statsLeftEl).display === 'none';
+          statsLeftEl.style.display = isHidden ? 'flex' : 'none';
+          statsRightEl.style.display = isHidden ? 'flex' : 'none';
+        }
+      }
+    }
+
+    document.getElementById('mobileStatsToggleBtn')?.addEventListener('click', openMatchDetails);
+    document.getElementById('matchDetailsBtn')?.addEventListener('click', openMatchDetails);
 
     statsBackdropEl?.addEventListener('click', closeMobileStats);
 
@@ -1479,7 +1626,10 @@
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js", { scope: "./" })
-          .then(() => console.log("Chess Royale offline cache enabled"))
+          .then((reg) => {
+            reg.update();
+            console.log("Chess Royale offline cache updated");
+          })
           .catch((error) => console.warn("Offline cache unavailable:", error));
       });
     }

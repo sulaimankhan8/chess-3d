@@ -7,12 +7,7 @@ import { ChessAI } from './ai.js';
 // --- 3D setup ---
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x08120f);
-scene.fog = new THREE.Fog(
-  0x08120f,
-  18,
-  30
-);
+scene.background = new THREE.Color(0x0a0d14);
 const camera = new THREE.PerspectiveCamera(
   35,
   container.clientWidth / container.clientHeight,
@@ -63,7 +58,8 @@ const controls =
   );
 
 controls.enableDamping = true;
-controls.dampingFactor = 0.08;
+controls.dampingFactor = 0.05;
+controls.rotateSpeed = 0.45;
 controls.autoRotate = false;
 
 controls.target.set(
@@ -84,8 +80,8 @@ controls.maxDistance = 16;
 
 const ambient =
   new THREE.AmbientLight(
-    0x404060,
-    0.72
+    0x687085,
+    1.15
   );
 
 scene.add(ambient);
@@ -93,7 +89,7 @@ scene.add(ambient);
 const keyLight =
   new THREE.DirectionalLight(
     0xffeedd,
-    0.95
+    1.10
   );
 
 keyLight.position.set(
@@ -114,27 +110,27 @@ scene.add(keyLight);
 
 const fillLight =
   new THREE.DirectionalLight(
-    0x99aaff,
-    0.38
+    0x99bbff,
+    0.65
   );
 
 fillLight.position.set(
-  -4,
-  6,
-  -6
+  -5,
+  8,
+  -7
 );
 
 scene.add(fillLight);
 
 const backLight =
   new THREE.DirectionalLight(
-    0xccbbaa,
-    0.22
+    0xffeedd,
+    0.50
   );
 
 backLight.position.set(
   0,
-  2,
+  6,
   -10
 );
 
@@ -376,6 +372,7 @@ for (
 
     mesh.receiveShadow = true;
     mesh.castShadow = false;
+    mesh.userData = { row: r, col: c };
 
     boardGroup.add(
       mesh
@@ -877,18 +874,127 @@ function preloadPieceModels() {
         (error) => {
 
           pieceModelsReady =
-            false;
+            true;
 
-          console.error(
-            'Chess piece models failed to load:',
+          console.warn(
+            'GLTF piece models offline/loading error, using procedural 3D models:',
             error
           );
 
-          return false;
+          return true;
         }
       );
 
   return pieceModelsLoading;
+}
+
+function createProceduralPieceMesh(type) {
+  const group = new THREE.Group();
+  const isWhite = isWhitePiece(type);
+  const mat = new THREE.MeshStandardMaterial({
+    color: isWhite ? 0xf4efe3 : 0x1a1d28,
+    roughness: isWhite ? 0.35 : 0.45,
+    metalness: 0.1
+  });
+
+  const baseGeo = new THREE.CylinderGeometry(0.32, 0.38, 0.15, 16);
+  const baseMesh = new THREE.Mesh(baseGeo, mat);
+  baseMesh.position.y = 0.075;
+  baseMesh.castShadow = true;
+  group.add(baseMesh);
+
+  let pieceType = type;
+  if (pieceType >= PIECES.BP) pieceType -= 6;
+
+  if (pieceType === PIECES.WP) {
+    const bodyGeo = new THREE.CylinderGeometry(0.18, 0.28, 0.4, 16);
+    const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+    bodyMesh.position.y = 0.35;
+    bodyMesh.castShadow = true;
+    group.add(bodyMesh);
+
+    const headGeo = new THREE.SphereGeometry(0.2, 16, 16);
+    const headMesh = new THREE.Mesh(headGeo, mat);
+    headMesh.position.y = 0.65;
+    headMesh.castShadow = true;
+    group.add(headMesh);
+  } else if (pieceType === PIECES.WN) {
+    const bodyGeo = new THREE.CylinderGeometry(0.2, 0.3, 0.4, 16);
+    const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+    bodyMesh.position.y = 0.35;
+    bodyMesh.castShadow = true;
+    group.add(bodyMesh);
+
+    const headGeo = new THREE.BoxGeometry(0.25, 0.4, 0.35);
+    const headMesh = new THREE.Mesh(headGeo, mat);
+    headMesh.position.set(0, 0.65, 0.05);
+    headMesh.rotation.x = 0.2;
+    headMesh.castShadow = true;
+    group.add(headMesh);
+  } else if (pieceType === PIECES.WB) {
+    const bodyGeo = new THREE.CylinderGeometry(0.18, 0.3, 0.5, 16);
+    const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+    bodyMesh.position.y = 0.4;
+    bodyMesh.castShadow = true;
+    group.add(bodyMesh);
+
+    const headGeo = new THREE.SphereGeometry(0.22, 16, 16);
+    headGeo.scale(0.8, 1.2, 0.8);
+    const headMesh = new THREE.Mesh(headGeo, mat);
+    headMesh.position.y = 0.75;
+    headMesh.castShadow = true;
+    group.add(headMesh);
+  } else if (pieceType === PIECES.WR) {
+    const bodyGeo = new THREE.CylinderGeometry(0.26, 0.32, 0.55, 16);
+    const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+    bodyMesh.position.y = 0.425;
+    bodyMesh.castShadow = true;
+    group.add(bodyMesh);
+
+    const topGeo = new THREE.CylinderGeometry(0.3, 0.28, 0.2, 8);
+    const topMesh = new THREE.Mesh(topGeo, mat);
+    topMesh.position.y = 0.75;
+    topMesh.castShadow = true;
+    group.add(topMesh);
+  } else if (pieceType === PIECES.WQ) {
+    const bodyGeo = new THREE.CylinderGeometry(0.2, 0.34, 0.65, 16);
+    const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+    bodyMesh.position.y = 0.475;
+    bodyMesh.castShadow = true;
+    group.add(bodyMesh);
+
+    const crownGeo = new THREE.ConeGeometry(0.28, 0.3, 16);
+    const crownMesh = new THREE.Mesh(crownGeo, mat);
+    crownMesh.position.y = 0.9;
+    crownMesh.castShadow = true;
+    group.add(crownMesh);
+
+    const ballGeo = new THREE.SphereGeometry(0.08, 12, 12);
+    const ballMesh = new THREE.Mesh(ballGeo, mat);
+    ballMesh.position.y = 1.08;
+    ballMesh.castShadow = true;
+    group.add(ballMesh);
+  } else if (pieceType === PIECES.WK) {
+    const bodyGeo = new THREE.CylinderGeometry(0.22, 0.36, 0.7, 16);
+    const bodyMesh = new THREE.Mesh(bodyGeo, mat);
+    bodyMesh.position.y = 0.5;
+    bodyMesh.castShadow = true;
+    group.add(bodyMesh);
+
+    const crownGeo = new THREE.CylinderGeometry(0.28, 0.22, 0.25, 16);
+    const crownMesh = new THREE.Mesh(crownGeo, mat);
+    crownMesh.position.y = 0.925;
+    crownMesh.castShadow = true;
+    group.add(crownMesh);
+
+    const crossV = new THREE.BoxGeometry(0.06, 0.2, 0.06);
+    const crossVMesh = new THREE.Mesh(crossV, mat);
+    crossVMesh.position.y = 1.125;
+    crossVMesh.castShadow = true;
+    group.add(crossVMesh);
+  }
+
+  return group;
 }
 
 // ============================================================
@@ -927,10 +1033,6 @@ function createPieceMesh(
       type
     );
 
-  // ----------------------------------------------------------
-  // Clone materials for each piece
-  // ----------------------------------------------------------
-
   piece.traverse(
     (child) => {
 
@@ -954,16 +1056,6 @@ function createPieceMesh(
                 ? sourceMaterial.clone()
                 : new THREE.MeshStandardMaterial();
 
-            // ------------------------------------------------
-            // Explicit chess-piece colors.
-            //
-            // The supplied models use a neutral material, so we
-            // set the actual piece color instead of multiplying
-            // the source color. This prevents white pieces from
-            // becoming grey/silver and black pieces from picking
-            // up unexpected purple/brown tints.
-            // ------------------------------------------------
-
             if (
               material.color
             ) {
@@ -971,14 +1063,10 @@ function createPieceMesh(
               material.color.set(
                 isWhite
                   ? 0xf4efe3
-                  : 0x101114
+                  : 0x2c3240
               );
             }
 
-            // Ignore the source base-color artwork. Several of the
-            // supplied models contain brown/gold wood textures, which
-            // should not leak into the chess side color. Keep the normal
-            // and roughness maps for surface detail.
             material.map = null;
 
             if (material.emissive) {
@@ -989,17 +1077,13 @@ function createPieceMesh(
               material.emissiveIntensity = 0;
             }
 
-            // ------------------------------------------------
-            // Controlled satin finish.
-            // ------------------------------------------------
-
             if (
               'roughness'
               in material
             ) {
 
               material.roughness =
-                0.52;
+                isWhite ? 0.45 : 0.35;
             }
 
             if (
@@ -1033,14 +1117,6 @@ function createPieceMesh(
       child.receiveShadow = true;
     }
   );
-
-  // ----------------------------------------------------------
-  // Knight facing.
-  // Keep the imported knight's X/Z correction untouched and
-  // rotate the OUTER group for black. This is important: adding
-  // PI to the imported model's Euler Y after the X=-PI/2
-  // correction can invert the knight instead of simply turning it.
-  // ----------------------------------------------------------
 
   group.add(
     piece
@@ -1106,7 +1182,7 @@ let cameraAnimStartTime =
   0;
 
 const CAMERA_ANIM_DURATION =
-  900;
+  1200;
 
 function getShortestAngleDelta(
   start,
@@ -1967,97 +2043,31 @@ function animateMove(
     return;
   }
 
-  const startPos =
-    fromGroup.position.clone();
+  const startPos = fromGroup.position.clone();
+  const startRotY = fromGroup.rotation.y;
+  const endPos = new THREE.Vector3(toPos.x, 0.12, toPos.z);
+  const duration = 400;
+  const startTime = performance.now();
+  animating = true;
 
-  const endPos =
-    new THREE.Vector3(
-      toPos.x,
-      0.12,
-      toPos.z
-    );
-
-  const duration =
-    350;
-
-  const startTime =
-    performance.now();
-
-  animating =
-    true;
-
-  const capturedGroup =
-    squares[
-      move.toRow
-    ][
-      move.toCol
-    ].group;
-
-  const capturedRow =
-    move.toRow;
-
-  const capturedCol =
-    move.toCol;
+  const capturedGroup = squares[move.toRow][move.toCol].group;
+  const capturedRow = move.toRow;
+  const capturedCol = move.toCol;
 
   function step(time) {
+    const t = Math.min((time - startTime) / duration, 1);
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
-    const t =
-      Math.min(
-        (
-          time -
-          startTime
-        ) / duration,
-        1
-      );
+    fromGroup.position.lerpVectors(startPos, endPos, ease);
+    fromGroup.position.y = 0.12 + Math.sin(ease * Math.PI) * 0.35;
+    fromGroup.rotation.y = startRotY;
 
-    const ease =
-      t < 0.5
-        ? 2 * t * t
-        : -1 +
-          (
-            4 -
-            2 * t
-          ) * t;
-
-    fromGroup.position.lerpVectors(
-      startPos,
-      endPos,
-      ease
-    );
-
-    fromGroup.position.y =
-      0.12 +
-      Math.sin(
-        ease * Math.PI
-      ) * 0.3;
-
-    // Keep the move animation,
-    // but don't permanently rotate
-    // the imported GLTF.
-    fromGroup.rotation.y =
-      ease *
-      Math.PI *
-      2;
-
-    if (
-      t < 1
-    ) {
-
-      requestAnimationFrame(
-        step
-      );
-
+    if (t < 1) {
+      requestAnimationFrame(step);
     } else {
-
-      fromGroup.position.copy(
-        endPos
-      );
-
-      fromGroup.position.y =
-        0.12;
-
-      fromGroup.rotation.y =
-        0;
+      fromGroup.position.copy(endPos);
+      fromGroup.position.y = 0.12;
+      fromGroup.rotation.y = startRotY;
 
       // Remove captured piece.
       if (
@@ -2137,6 +2147,10 @@ function animateMove(
 function render(
   afterMove = null
 ) {
+
+  if (is2DView) {
+    render2DBoard();
+  }
 
   moveCount.textContent =
     game.history.length;
@@ -2756,6 +2770,7 @@ function render(
             targetZ
           );
 
+          ring.userData = { row: mv.toRow, col: mv.toCol };
           markersGroup.add(
             ring
           );
@@ -2803,6 +2818,7 @@ function render(
             targetZ
           );
 
+          ring.userData = { row: mv.toRow, col: mv.toCol };
           markersGroup.add(
             ring
           );
@@ -2845,6 +2861,7 @@ function render(
             targetZ
           );
 
+          disc.userData = { row: mv.toRow, col: mv.toCol };
           markersGroup.add(
             disc
           );
@@ -2939,6 +2956,40 @@ function render(
 // AI
 // ============================================================
 
+function animate2DMove(move, callback) {
+  const boardEl = document.getElementById('board2d');
+  if (!boardEl) {
+    callback();
+    return;
+  }
+  const fromSqIndex = move.fromRow * 8 + move.fromCol;
+  const sqs = boardEl.querySelectorAll('.sq2d');
+  const fromSq = sqs[fromSqIndex];
+  if (!fromSq) {
+    callback();
+    return;
+  }
+  const pieceEl = fromSq.querySelector('.piece2d');
+  if (!pieceEl) {
+    callback();
+    return;
+  }
+
+  const sqWidth = fromSq.clientWidth || 50;
+  const sqHeight = fromSq.clientHeight || 50;
+  const deltaX = (move.toCol - move.fromCol) * sqWidth;
+  const deltaY = (move.toRow - move.fromRow) * sqHeight;
+
+  animating = true;
+  pieceEl.style.transition = 'transform 450ms cubic-bezier(0.25, 1, 0.5, 1)';
+  pieceEl.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+  setTimeout(() => {
+    animating = false;
+    callback();
+  }, 470);
+}
+
 function triggerAI() {
 
   if (
@@ -2959,8 +3010,8 @@ function triggerAI() {
 
   const delay =
     mode === 'ai-hard'
-      ? 500
-      : 350;
+      ? 600
+      : 450;
 
   setTimeout(
     () => {
@@ -2979,65 +3030,43 @@ function triggerAI() {
         return;
       }
 
-      const move =
-        ai.getBestMove(
-          game,
-          'black'
-        );
+      const move = ai.getBestMove(game, 'black');
 
-      if (
-        !move
-      ) {
-
-        aiThinking =
-          false;
-
+      if (!move) {
+        aiThinking = false;
         render();
-
         return;
       }
 
-      // ------------------------------------------------------
-      // Animate AI move
-      // ------------------------------------------------------
+      // Highlight the intended move origin & destination squares first
+      game.lastMove = move;
+      render();
 
-      const fromGroup =
-        squares[
-          move.fromRow
-        ][
-          move.fromCol
-        ].group;
+      // Pause 300ms so player clearly sees the pre-move highlight
+      setTimeout(() => {
+        if (is2DView) {
+          animate2DMove(move, () => {
+            game.makeMove(move);
+            aiThinking = false;
+            render();
+          });
+        } else {
+          const fromGroup = squares[move.fromRow][move.fromCol].group;
 
-      if (
-        !fromGroup
-      ) {
+          if (!fromGroup) {
+            game.makeMove(move);
+            aiThinking = false;
+            render();
+            return;
+          }
 
-        game.makeMove(
-          move
-        );
-
-        aiThinking =
-          false;
-
-        render();
-
-        return;
-      }
-
-      animateMove(
-        move,
-        () => {
-
-          game.makeMove(
-            move
-          );
-
-          aiThinking =
-            false;
-
-          render();
+          animateMove(move, () => {
+            game.makeMove(move);
+            aiThinking = false;
+            render();
+          });
         }
-      );
+      }, 300);
 
     },
     delay
@@ -3071,30 +3100,29 @@ newGameBtn.addEventListener(
   }
 );
 
-// ============================================================
-// UNDO
-// ============================================================
+function handleUndo() {
+  if (animating || aiThinking) return;
 
-undoBtn.addEventListener(
-  'click',
-  () => {
-
-    if (
-      animating ||
-      aiThinking
-    ) {
-
-      return;
+  if (mode !== 'pvp') {
+    // In vs Computer mode, undo 2 plies if both player and AI have moved
+    if (game.history.length >= 2) {
+      game.undo();
+      game.undo();
+    } else if (game.history.length === 1) {
+      game.undo();
     }
-
-    if (
-      game.undo()
-    ) {
-
-      render();
-    }
+  } else {
+    // In 2-Player (PvP) mode, undo 1 ply
+    game.undo();
   }
-);
+
+  aiThinking = false;
+  lastShownGameResult = null;
+  hideGameResultModal();
+  render();
+}
+
+undoBtn.addEventListener('click', handleUndo);
 
 // ============================================================
 // CLAIM DRAW
@@ -3210,88 +3238,153 @@ mobileNewGameBtn?.addEventListener('click', () => {
   render();
 });
 
-mobileUndoBtn?.addEventListener('click', () => {
-  if (animating || aiThinking) return;
-  if (game.undo()) render();
-});
+mobileUndoBtn?.addEventListener('click', handleUndo);
 
 // ============================================================
 // CAMERA 2D/3D VIEW TOGGLE
 // ============================================================
 
+// ============================================================
+// 2D FLAT CHESSBOARD RENDERER & PIECE VECTOR SET
+// ============================================================
+
+const CBURNETT_SVGS = {
+  [PIECES.WP]: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
+  [PIECES.WN]: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+  [PIECES.WB]: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+  [PIECES.WR]: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+  [PIECES.WQ]: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+  [PIECES.WK]: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+
+  [PIECES.BP]: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+  [PIECES.BN]: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+  [PIECES.BB]: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+  [PIECES.BR]: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+  [PIECES.BQ]: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+  [PIECES.BK]: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg'
+};
+
 let is2DView = false;
+const viewToggleBtn = document.getElementById('viewToggleBtn');
+const viewToggleIcon = document.getElementById('viewToggleIcon');
 const mobileViewToggleBtn = document.getElementById('mobileViewToggleBtn');
 const mobileViewToggleIcon = document.getElementById('mobileViewToggleIcon');
 
-function animateCamera(targetPosition, targetLookAt, targetUp, onComplete) {
-  const duration = 500; // ms
-  const startPosition = camera.position.clone();
-  const startLookAt = controls.target.clone();
-  const startUp = camera.up.clone();
-  const startTime = performance.now();
+function render2DBoard() {
+  const boardEl = document.getElementById('board2d');
+  if (!boardEl) return;
+  boardEl.innerHTML = '';
 
-  function tick() {
-    const elapsed = performance.now() - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    
-    // Ease in out quad
-    const ease = progress < 0.5 
-      ? 2 * progress * progress 
-      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+  let lastMoveFrom = null;
+  let lastMoveTo = null;
+  if (game.lastMove && game.lastMove.from && game.lastMove.to) {
+    const fCol = game.lastMove.from.charCodeAt(0) - 97;
+    const fRow = 8 - parseInt(game.lastMove.from[1]);
+    const tCol = game.lastMove.to.charCodeAt(0) - 97;
+    const tRow = 8 - parseInt(game.lastMove.to[1]);
+    lastMoveFrom = `${fRow},${fCol}`;
+    lastMoveTo = `${tRow},${tCol}`;
+  }
 
-    camera.position.lerpVectors(startPosition, targetPosition, ease);
-    controls.target.lerpVectors(startLookAt, targetLookAt, ease);
-    camera.up.lerpVectors(startUp, targetUp, ease);
-    
-    camera.lookAt(controls.target);
-    controls.update();
+  const validMap = new Map();
+  if (game.selected) {
+    const moves = game.validMoves.filter(m => m.fromRow === game.selected.row && m.fromCol === game.selected.col);
+    moves.forEach(m => validMap.set(`${m.toRow},${m.toCol}`, m));
+  }
 
-    if (progress < 1) {
-      requestAnimationFrame(tick);
-    } else {
-      if (onComplete) onComplete();
+  let checkSquare = null;
+  if (game.gameResult === 'check') {
+    const kingPiece = game.currentPlayer === 'white' ? PIECES.WK : PIECES.BK;
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if (game.board[r][c] === kingPiece) {
+          checkSquare = `${r},${c}`;
+          break;
+        }
+      }
     }
   }
-  requestAnimationFrame(tick);
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const sq = document.createElement('div');
+      const isLight = (r + c) % 2 === 0;
+      const key = `${r},${c}`;
+      
+      sq.className = `sq2d ${isLight ? 'light' : 'dark'}`;
+
+      if (game.selected && game.selected.row === r && game.selected.col === c) {
+        sq.classList.add('selected');
+      } else if (key === lastMoveFrom || key === lastMoveTo) {
+        sq.classList.add('last-move');
+      } else if (key === checkSquare) {
+        sq.classList.add('check');
+      }
+
+      const piece = game.board[r][c];
+      if (piece && CBURNETT_SVGS[piece]) {
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'piece2d';
+        pieceEl.innerHTML = `<img src="${CBURNETT_SVGS[piece]}" alt="piece" style="width:100%;height:100%;pointer-events:none;" />`;
+        sq.appendChild(pieceEl);
+      }
+
+      if (validMap.has(key)) {
+        const move = validMap.get(key);
+        if (move.capture || move.enPassant) {
+          const ring = document.createElement('div');
+          ring.className = 'ring2d';
+          sq.appendChild(ring);
+        } else {
+          const dot = document.createElement('div');
+          dot.className = 'dot2d';
+          sq.appendChild(dot);
+        }
+      }
+
+      sq.addEventListener('click', () => {
+        if (animating || aiThinking) return;
+        game.selectSquare(r, c);
+        render();
+      });
+
+      boardEl.appendChild(sq);
+    }
+  }
 }
 
-mobileViewToggleBtn?.addEventListener('click', () => {
+function toggle2D3DView() {
   if (animating) return;
   is2DView = !is2DView;
-  animating = true;
+
+  const boardWrap2d = document.getElementById('board2d-wrap');
+  const canvasContainer = document.getElementById('canvas-container');
+  const updateIcons = (iconId) => {
+    if (viewToggleIcon) viewToggleIcon.setAttribute('href', iconId);
+    if (mobileViewToggleIcon) mobileViewToggleIcon.setAttribute('href', iconId);
+  };
 
   if (is2DView) {
-    // Transition to 2D view: Y = 11.5 directly overhead
-    animateCamera(
-      new THREE.Vector3(0, 11.5, 0.001),
-      new THREE.Vector3(0, 0.62, 0),
-      new THREE.Vector3(0, 0, -1),
-      () => {
-        controls.enableRotate = false;
-        controls.update();
-        animating = false;
-        if (mobileViewToggleIcon) {
-          mobileViewToggleIcon.setAttribute('href', '#ico-eye');
-        }
-      }
-    );
+    if (boardWrap2d) boardWrap2d.style.display = 'flex';
+    if (canvasContainer) {
+      canvasContainer.style.opacity = '0';
+      canvasContainer.style.pointerEvents = 'none';
+    }
+    updateIcons('#ico-eye');
+    render2DBoard();
   } else {
-    // Transition to 3D view: default starting angle
-    controls.enableRotate = true;
-    animateCamera(
-      new THREE.Vector3(0, 7.15, 9.0),
-      new THREE.Vector3(0, 0.62, 0),
-      new THREE.Vector3(0, 1, 0),
-      () => {
-        controls.update();
-        animating = false;
-        if (mobileViewToggleIcon) {
-          mobileViewToggleIcon.setAttribute('href', '#ico-grid');
-        }
-      }
-    );
+    if (boardWrap2d) boardWrap2d.style.display = 'none';
+    if (canvasContainer) {
+      canvasContainer.style.opacity = '1';
+      canvasContainer.style.pointerEvents = 'auto';
+    }
+    updateIcons('#ico-grid');
+    render();
   }
-});
+}
+
+viewToggleBtn?.addEventListener('click', toggle2D3DView);
+mobileViewToggleBtn?.addEventListener('click', toggle2D3DView);
 
 // ============================================================
 // BOARD RAYCASTER
@@ -3373,87 +3466,41 @@ renderer.domElement.addEventListener(
       camera
     );
 
-    const meshes = [];
+    const targetObjects = [...boardGroup.children, ...markersGroup.children];
+    const intersects = raycaster.intersectObjects(targetObjects, true);
 
-    for (
-      let r = 0;
-      r < 8;
-      r++
-    ) {
-
-      for (
-        let c = 0;
-        c < 8;
-        c++
-      ) {
-
-        meshes.push(
-          squares[r][c].mesh
-        );
-      }
-    }
-
-    const intersects =
-      raycaster.intersectObjects(
-        meshes
-      );
-
-    if (
-      intersects.length ===
-      0
-    ) {
-
+    if (intersects.length === 0) {
       return;
     }
 
-    const hit =
-      intersects[0].object;
+    let row = -1;
+    let col = -1;
 
-    let row =
-      -1;
-
-    let col =
-      -1;
-
-    for (
-      let r = 0;
-      r < 8;
-      r++
-    ) {
-
-      for (
-        let c = 0;
-        c < 8;
-        c++
-      ) {
-
-        if (
-          squares[r][c].mesh ===
-          hit
-        ) {
-
-          row =
-            r;
-
-          col =
-            c;
-
+    for (let i = 0; i < intersects.length; i++) {
+      let curr = intersects[i].object;
+      while (curr && curr !== scene) {
+        if (curr.userData && typeof curr.userData.row === 'number' && typeof curr.userData.col === 'number') {
+          row = curr.userData.row;
+          col = curr.userData.col;
           break;
         }
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            if (squares[r][c].mesh === curr || squares[r][c].group === curr) {
+              row = r;
+              col = c;
+              break;
+            }
+          }
+          if (row !== -1) break;
+        }
+        if (row !== -1) break;
+        curr = curr.parent;
       }
-
-      if (
-        row !== -1
-      ) {
-
-        break;
-      }
+      if (row !== -1) break;
     }
 
-    if (
-      row === -1
-    ) {
-
+    if (row === -1) {
       return;
     }
 
@@ -3735,18 +3782,20 @@ function fitBoardToViewport() {
   const distWidth = boardSize / (2 * halfFovWidth);
   let targetDist = Math.max(distHeight, distWidth);
 
-  // Make the board 20% larger on mobile screens by reducing camera distance
-  if (width < 1100) {
-    targetDist *= 0.8;
+  // Add 15% safety margin on mobile portrait screens so the board is 100% visible without clipping!
+  if (width < 768) {
+    targetDist *= 1.15;
+  } else if (width < 1100) {
+    targetDist *= 1.05;
   }
 
-  targetDist = Math.max(4.5, Math.min(targetDist, 35.0));
+  targetDist = Math.max(5.5, Math.min(targetDist, 35.0));
 
   if (isNaN(targetDist) || !isFinite(targetDist)) {
     return;
   }
 
-  controls.maxDistance = Math.max(16.0, targetDist + 2.0);
+  controls.maxDistance = Math.max(18.0, targetDist + 4.0);
 
   const target = controls.target;
   const dir = new THREE.Vector3().subVectors(camera.position, target).normalize();
@@ -3787,6 +3836,7 @@ function animate() {
   if (
     cameraAnimating
   ) {
+    controls.enabled = false;
 
     const elapsed =
       performance.now() -
@@ -3848,10 +3898,12 @@ function animate() {
 
       cameraAnimating =
         false;
+      controls.enabled = true;
+      controls.update();
     }
+  } else {
+    controls.update();
   }
-
-  controls.update();
 
   renderer.render(
     scene,
@@ -3863,6 +3915,9 @@ function animate() {
   );
 }
 
+pieceModelsReady = true;
+render();
+fitBoardToViewport();
 animate();
 
 // ============================================================
@@ -3871,28 +3926,9 @@ animate();
 
 preloadPieceModels()
   .then(
-    (loaded) => {
-
-      if (
-        !loaded
-      ) {
-
-        if (
-          statusText
-        ) {
-
-          statusText.textContent =
-            'Unable to load chess piece models.';
-        }
-
-        return;
-      }
-
+    () => {
       render();
       fitBoardToViewport();
-
-      console.log(
-        'Chess Royale 3D loaded with supplied GLTF chess models.'
-      );
+      console.log('Chess Royale 3D initialized cleanly.');
     }
   );
