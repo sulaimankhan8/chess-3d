@@ -3,11 +3,35 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ChessGame, PIECES } from './game.js';
 import { ChessAI } from './ai.js';
+import { audio } from './audio.js';
 
 // --- 3D setup ---
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0d14);
+// ============================================================
+// ATMOSPHERIC BACKGROUND (DARK PREMIUM MIDNIGHT THEME)
+// ============================================================
+
+function createAtmosphereTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+
+  // Deep dark radial gradient
+  const grad = ctx.createRadialGradient(512, 450, 40, 512, 512, 650);
+  grad.addColorStop(0, '#0a0e1a');    // Deep midnight slate
+  grad.addColorStop(0.4, '#060812');  // Dark obsidian
+  grad.addColorStop(0.8, '#030408');  // Pitch dark
+  grad.addColorStop(1, '#020204');    // Pure near-black edge
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+scene.background = createAtmosphereTexture();
 const camera = new THREE.PerspectiveCamera(
   35,
   container.clientWidth / container.clientHeight,
@@ -75,13 +99,13 @@ controls.minDistance = 4;
 controls.maxDistance = 16;
 
 // ============================================================
-// LIGHTING
+// LIGHTING (BALANCED HIGH CONTRAST DARK THEME)
 // ============================================================
 
 const ambient =
   new THREE.AmbientLight(
-    0x687085,
-    1.15
+    0x606880,
+    0.55
   );
 
 scene.add(ambient);
@@ -89,7 +113,7 @@ scene.add(ambient);
 const keyLight =
   new THREE.DirectionalLight(
     0xffeedd,
-    1.10
+    0.90
   );
 
 keyLight.position.set(
@@ -110,8 +134,8 @@ scene.add(keyLight);
 
 const fillLight =
   new THREE.DirectionalLight(
-    0x99bbff,
-    0.65
+    0x88aadd,
+    0.35
   );
 
 fillLight.position.set(
@@ -125,7 +149,7 @@ scene.add(fillLight);
 const backLight =
   new THREE.DirectionalLight(
     0xffeedd,
-    0.50
+    0.40
   );
 
 backLight.position.set(
@@ -138,21 +162,65 @@ scene.add(backLight);
 
 const ambient2 =
   new THREE.HemisphereLight(
-    0x445566,
-    0x221122,
-    0.55
+    0x253040,
+    0x100c14,
+    0.25
   );
 
 scene.add(ambient2);
 
 // ============================================================
-// BOARD
+// BOARD & ENVIRONMENT
 // ============================================================
 
 const boardGroup =
   new THREE.Group();
 
 scene.add(boardGroup);
+
+// Atmospheric floating dust particles
+const particleCount = 65;
+const particleGeo = new THREE.BufferGeometry();
+const particlePos = new Float32Array(particleCount * 3);
+const particleVel = [];
+
+for (let i = 0; i < particleCount; i++) {
+  particlePos[i * 3] = (Math.random() - 0.5) * 22;
+  particlePos[i * 3 + 1] = Math.random() * 8 + 0.3;
+  particlePos[i * 3 + 2] = (Math.random() - 0.5) * 22;
+  particleVel.push({
+    y: 0.002 + Math.random() * 0.0025,
+    wobble: Math.random() * Math.PI * 2
+  });
+}
+
+particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+
+function createParticleTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255, 230, 180, 0.85)');
+  grad.addColorStop(0.4, 'rgba(215, 185, 110, 0.30)');
+  grad.addColorStop(1, 'rgba(215, 185, 110, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(canvas);
+}
+
+const particleMat = new THREE.PointsMaterial({
+  size: 0.16,
+  map: createParticleTexture(),
+  transparent: true,
+  opacity: 0.55,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+
+const ambientParticles = new THREE.Points(particleGeo, particleMat);
+scene.add(ambientParticles);
 
 const squareSize = 0.95;
 const gap = 0.02;
@@ -164,16 +232,16 @@ const boardRadius = 4.0;
 
 const lightMat =
   new THREE.MeshStandardMaterial({
-    color: 0xe6d1b2, // Light cream/maple
-    roughness: 0.25,  // Polished semi-gloss
+    color: 0xd9c5a7, // Warm cream maple
+    roughness: 0.32,  // Polished semi-gloss
     metalness: 0.05
   });
 
-// Dark Squares: Rich Walnut/Mahogany Wood Tone
+// Dark Squares: Deep Warm Walnut/Mahogany Wood Tone
 const darkMat =
   new THREE.MeshStandardMaterial({
-    color: 0x5a311b, // Deep warm brown
-    roughness: 0.30,  // Slightly more texture than light squares
+    color: 0x482414, // Deep rich walnut/mahogany
+    roughness: 0.38,  // Textured wood grain
     metalness: 0.05
   });
 // ============================================================
@@ -189,8 +257,8 @@ new THREE.BoxGeometry(
 
 const baseMat =
 new THREE.MeshStandardMaterial({
-  color: 0x24130d,       // dark wooden underside
-  roughness: 0.78,
+  color: 0x160f0a,       // deep dark wooden underside
+  roughness: 0.80,
   metalness: 0.02
 });
 
@@ -222,8 +290,8 @@ new THREE.BoxGeometry(
 
 const goldBevelMat =
 new THREE.MeshStandardMaterial({
-  color: 0x3a3428,       // muted bronze/gray
-  roughness: 0.58,
+  color: 0x221a14,       // sleek dark bronze/charcoal
+  roughness: 0.60,
   metalness: 0.12
 });
 
@@ -241,50 +309,66 @@ boardGroup.add(
 );
 
 // ============================================================
+// RESPONSIVE LAYOUT HELPER
+// ============================================================
+
+function isMobileLayout() {
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
+  return width < 768 || (width / (height || 1)) < 0.95;
+}
+
+// ============================================================
 // GRAVEYARD TRAYS
 // ============================================================
 
-const trayGeo =
-new THREE.BoxGeometry(
-  1.4,
-  0.15,
-  7.8
-);
-
 const trayMat =
 new THREE.MeshStandardMaterial({
-  color: 0x2b1810,       // dark walnut
-  roughness: 0.76,
+  color: 0x1a120c,       // deep dark walnut
+  roughness: 0.75,
   metalness: 0.02
 });
 
 const leftTray =
 new THREE.Mesh(
-  trayGeo,
+  new THREE.BoxGeometry(1.4, 0.15, 7.8),
   trayMat
 );
-
-leftTray.position.set(
-  -5.35,
-  -0.15,
-  0
-);
-
 leftTray.receiveShadow = true;
 
 const rightTray =
 new THREE.Mesh(
-  trayGeo,
+  new THREE.BoxGeometry(1.4, 0.15, 7.8),
   trayMat
 );
-
-rightTray.position.set(
-  5.35,
-  -0.15,
-  0
-);
-
 rightTray.receiveShadow = true;
+
+function updateGraveyardTrays() {
+  const isMobile = isMobileLayout();
+  if (isMobile) {
+    // Top tray (Black's side / opponent captures)
+    leftTray.geometry.dispose();
+    leftTray.geometry = new THREE.BoxGeometry(7.8, 0.15, 1.4);
+    leftTray.position.set(0, -0.15, -5.35);
+
+    // Bottom tray (White's side / player captures)
+    rightTray.geometry.dispose();
+    rightTray.geometry = new THREE.BoxGeometry(7.8, 0.15, 1.4);
+    rightTray.position.set(0, -0.15, 5.35);
+  } else {
+    // Left tray (desktop)
+    leftTray.geometry.dispose();
+    leftTray.geometry = new THREE.BoxGeometry(1.4, 0.15, 7.8);
+    leftTray.position.set(-5.35, -0.15, 0);
+
+    // Right tray (desktop)
+    rightTray.geometry.dispose();
+    rightTray.geometry = new THREE.BoxGeometry(1.4, 0.15, 7.8);
+    rightTray.position.set(5.35, -0.15, 0);
+  }
+}
+
+updateGraveyardTrays();
 
 boardGroup.add(
   leftTray,
@@ -1760,92 +1844,72 @@ function renderCapturedStats() {
   // ----------------------------------------------------------
 
   clearGraveyard3D();
+  updateGraveyardTrays();
 
-  // Captured black pieces.
-  capturedByWhite.forEach(
-    (item, idx) => {
+  const isMobile = isMobileLayout();
 
-      const mesh =
-        createPieceMesh(
-          item.piece
-        );
+  if (isMobile) {
+    // Mobile layout: top & bottom trays (8 pieces per row, up to 2 rows)
 
-      mesh.scale.set(
-        0.32,
-        0.32,
-        0.32
-      );
+    // Top tray: Captured white pieces (taken by Black)
+    capturedByBlack.forEach((item, idx) => {
+      const mesh = createPieceMesh(item.piece);
+      mesh.scale.set(0.30, 0.30, 0.30);
 
-      const row =
-        Math.floor(
-          idx / 2
-        );
+      const row = Math.floor(idx / 8);
+      const col = idx % 8;
+      const x = (col - 3.5) * 0.92;
+      const z = -4.95 - row * 0.70;
 
-      const col =
-        idx % 2;
+      mesh.position.set(x, 0.05, z);
+      graveyardGroup.add(mesh);
+    });
 
-      const x =
-        5.0 +
-        col * 0.7;
+    // Bottom tray: Captured black pieces (taken by White)
+    capturedByWhite.forEach((item, idx) => {
+      const mesh = createPieceMesh(item.piece);
+      mesh.scale.set(0.30, 0.30, 0.30);
 
-      const z =
-        3.0 -
-        row * 0.85;
+      const row = Math.floor(idx / 8);
+      const col = idx % 8;
+      const x = (col - 3.5) * 0.92;
+      const z = 4.95 + row * 0.70;
 
-      mesh.position.set(
-        x,
-        0.05,
-        z
-      );
+      mesh.position.set(x, 0.05, z);
+      graveyardGroup.add(mesh);
+    });
 
-      graveyardGroup.add(
-        mesh
-      );
-    }
-  );
+  } else {
+    // Desktop layout: left & right trays
 
-  // Captured white pieces.
-  capturedByBlack.forEach(
-    (item, idx) => {
+    // Captured black pieces on right tray (+X)
+    capturedByWhite.forEach((item, idx) => {
+      const mesh = createPieceMesh(item.piece);
+      mesh.scale.set(0.32, 0.32, 0.32);
 
-      const mesh =
-        createPieceMesh(
-          item.piece
-        );
+      const row = Math.floor(idx / 2);
+      const col = idx % 2;
+      const x = 5.0 + col * 0.7;
+      const z = 3.0 - row * 0.85;
 
-      mesh.scale.set(
-        0.32,
-        0.32,
-        0.32
-      );
+      mesh.position.set(x, 0.05, z);
+      graveyardGroup.add(mesh);
+    });
 
-      const row =
-        Math.floor(
-          idx / 2
-        );
+    // Captured white pieces on left tray (-X)
+    capturedByBlack.forEach((item, idx) => {
+      const mesh = createPieceMesh(item.piece);
+      mesh.scale.set(0.32, 0.32, 0.32);
 
-      const col =
-        idx % 2;
+      const row = Math.floor(idx / 2);
+      const col = idx % 2;
+      const x = -5.0 - col * 0.7;
+      const z = -3.0 + row * 0.85;
 
-      const x =
-        -5.0 -
-        col * 0.7;
-
-      const z =
-        -3.0 +
-        row * 0.85;
-
-      mesh.position.set(
-        x,
-        0.05,
-        z
-      );
-
-      graveyardGroup.add(
-        mesh
-      );
-    }
-  );
+      mesh.position.set(x, 0.05, z);
+      graveyardGroup.add(mesh);
+    });
+  }
 }
 
 // ============================================================
@@ -2165,20 +2229,50 @@ function render(
       : 'Black';
 
   // ----------------------------------------------------------
-  // Turn pill
+  // Turn pill HUD update
   // ----------------------------------------------------------
 
+  const turnPillEl =
+    document.getElementById('turnPill');
+
   const turnPillText =
-    document.getElementById(
-      'turnPillText'
-    );
+    document.getElementById('turnPillText');
 
-  if (
-    turnPillText
-  ) {
+  const turnPieceIcon =
+    document.getElementById('turnPieceIcon');
 
-    turnPillText.textContent =
-      `${player} to move`;
+  if (turnPillEl) {
+    turnPillEl.classList.remove('turn-white', 'turn-black', 'in-check', 'game-over');
+
+    if (game.gameOver) {
+      turnPillEl.classList.add('game-over');
+      if (turnPieceIcon) turnPieceIcon.textContent = '🏆';
+      if (turnPillText) {
+        if (game.gameResult === 'checkmate') {
+          turnPillText.textContent = `${game.winner === 'white' ? 'White' : 'Black'} Wins!`;
+        } else {
+          turnPillText.textContent = 'Game Drawn';
+        }
+      }
+    } else if (game.gameResult === 'check') {
+      turnPillEl.classList.add(isWhite ? 'turn-white' : 'turn-black', 'in-check');
+      if (turnPieceIcon) turnPieceIcon.textContent = isWhite ? '♔' : '♚';
+      if (turnPillText) {
+        turnPillText.textContent = `${player} in CHECK!`;
+      }
+    } else if (aiThinking && !isWhite) {
+      turnPillEl.classList.add('turn-black');
+      if (turnPieceIcon) turnPieceIcon.textContent = '🤖';
+      if (turnPillText) {
+        turnPillText.textContent = 'AI Thinking...';
+      }
+    } else {
+      turnPillEl.classList.add(isWhite ? 'turn-white' : 'turn-black');
+      if (turnPieceIcon) turnPieceIcon.textContent = isWhite ? '♔' : '♚';
+      if (turnPillText) {
+        turnPillText.textContent = `${player}'s Turn`;
+      }
+    }
   }
 
   if (
@@ -2508,6 +2602,23 @@ function render(
 
   if (sideStatusText) {
     sideStatusText.textContent = statusText.textContent;
+  }
+
+  // Audio cues for moves and game states
+  if (afterMove) {
+    if (game.gameOver) {
+      if (game.gameResult === 'checkmate') {
+        audio.playCheckmate();
+      }
+    } else if (game.gameResult === 'check') {
+      audio.playCheck();
+    } else if (afterMove.capture || afterMove.enPassant) {
+      audio.playCapture();
+    } else if (afterMove.promotedPiece || afterMove.promotion) {
+      audio.playPromotion();
+    } else {
+      audio.playMove();
+    }
   }
 
   if (game.gameOver) {
@@ -3006,7 +3117,9 @@ function triggerAI() {
     true;
 
   statusText.textContent =
-    'Computer thinking...';
+    'AI is thinking...';
+
+  render();
 
   const delay =
     mode === 'ai-hard'
@@ -3048,7 +3161,7 @@ function triggerAI() {
           animate2DMove(move, () => {
             game.makeMove(move);
             aiThinking = false;
-            render();
+            render(move);
           });
         } else {
           const fromGroup = squares[move.fromRow][move.fromCol].group;
@@ -3056,14 +3169,14 @@ function triggerAI() {
           if (!fromGroup) {
             game.makeMove(move);
             aiThinking = false;
-            render();
+            render(move);
             return;
           }
 
           animateMove(move, () => {
             game.makeMove(move);
             aiThinking = false;
-            render();
+            render(move);
           });
         }
       }, 300);
@@ -3116,6 +3229,7 @@ function handleUndo() {
     game.undo();
   }
 
+  audio.playUndo();
   aiThinking = false;
   lastShownGameResult = null;
   hideGameResultModal();
@@ -3264,7 +3378,7 @@ const CBURNETT_SVGS = {
   [PIECES.BK]: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg'
 };
 
-let is2DView = false;
+let is2DView = true;
 const viewToggleBtn = document.getElementById('viewToggleBtn');
 const viewToggleIcon = document.getElementById('viewToggleIcon');
 const mobileViewToggleBtn = document.getElementById('mobileViewToggleBtn');
@@ -3275,6 +3389,105 @@ function render2DBoard() {
   if (!boardEl) return;
   boardEl.innerHTML = '';
 
+  // Update Top & Bottom Player Strips (Chess.com Style)
+  const stripTop = document.getElementById('stripTop');
+  const topAvatar = document.getElementById('topAvatar');
+  const topName = document.getElementById('topName');
+  const topCaptures = document.getElementById('topCaptures');
+  const topLead = document.getElementById('topLead');
+
+  const stripBottom = document.getElementById('stripBottom');
+  const bottomAvatar = document.getElementById('bottomAvatar');
+  const bottomName = document.getElementById('bottomName');
+  const bottomCaptures = document.getElementById('bottomCaptures');
+  const bottomLead = document.getElementById('bottomLead');
+
+  const isWhiteTurn = game.currentPlayer === 'white';
+
+  if (stripTop) {
+    stripTop.classList.toggle('active-turn', !isWhiteTurn && !game.gameOver);
+  }
+  if (stripBottom) {
+    stripBottom.classList.toggle('active-turn', isWhiteTurn && !game.gameOver);
+  }
+
+  if (topAvatar) {
+    topAvatar.textContent = mode.startsWith('ai') ? '🤖' : '♚';
+  }
+  if (topName) {
+    topName.textContent = mode === 'ai-easy' ? 'Easy AI' : mode === 'ai-hard' ? 'Hard AI' : 'Black';
+  }
+  if (bottomAvatar) {
+    bottomAvatar.textContent = '♔';
+  }
+  if (bottomName) {
+    bottomName.textContent = mode.startsWith('ai') ? 'White (You)' : 'White';
+  }
+
+  // Calculate material and captured pieces like Chess.com
+  const {
+    capturedByWhite,
+    capturedByBlack,
+    whiteScore,
+    blackScore,
+    lead
+  } = game.getCapturedPieces();
+
+  const formatCaptures = (capsList, isWhiteSide) => {
+    if (!capsList || capsList.length === 0) {
+      return '<span style="color:#64748b;font-size:10px;">No captures</span>';
+    }
+    const pieceOrder = isWhiteSide
+      ? [PIECES.BP, PIECES.BN, PIECES.BB, PIECES.BR, PIECES.BQ]
+      : [PIECES.WP, PIECES.WN, PIECES.WB, PIECES.WR, PIECES.WQ];
+    
+    const counts = {};
+    capsList.forEach(item => {
+      counts[item.piece] = (counts[item.piece] || 0) + 1;
+    });
+
+    return pieceOrder
+      .filter(p => counts[p])
+      .map(p => {
+        const cnt = counts[p];
+        const svgUrl = CBURNETT_SVGS[p];
+        const countBadge = cnt > 1 ? `<span style="font-size:9px;font-weight:700;color:${isWhiteSide ? '#d4b262' : '#60a5fa'};margin-left:1px;">x${cnt}</span>` : '';
+        return `
+          <span style="display:inline-flex;align-items:center;padding:1px 3px;margin-right:2px;background:rgba(255,255,255,0.06);border-radius:4px;line-height:1;">
+            ${svgUrl ? `<img src="${svgUrl}" alt="piece" style="width:13px;height:13px;vertical-align:middle;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.5));pointer-events:none;" />` : ''}
+            ${countBadge}
+          </span>
+        `;
+      }).join('');
+  };
+
+  if (bottomCaptures) {
+    bottomCaptures.innerHTML = formatCaptures(capturedByWhite, true);
+  }
+
+  if (topCaptures) {
+    topCaptures.innerHTML = formatCaptures(capturedByBlack, false);
+  }
+
+  if (bottomLead) {
+    if (lead > 0) {
+      bottomLead.textContent = `+${lead}`;
+      bottomLead.style.display = 'inline-block';
+    } else {
+      bottomLead.style.display = 'none';
+    }
+  }
+
+  if (topLead) {
+    if (lead < 0) {
+      topLead.textContent = `+${Math.abs(lead)}`;
+      topLead.style.display = 'inline-block';
+    } else {
+      topLead.style.display = 'none';
+    }
+  }
+
+  // Last move highlights
   let lastMoveFrom = null;
   let lastMoveTo = null;
   if (game.lastMove && game.lastMove.from && game.lastMove.to) {
@@ -3321,6 +3534,20 @@ function render2DBoard() {
         sq.classList.add('check');
       }
 
+      // Add Chess.com style coordinates inside edge squares
+      if (c === 0) {
+        const rankCoord = document.createElement('span');
+        rankCoord.className = 'sq-coord-rank';
+        rankCoord.textContent = 8 - r;
+        sq.appendChild(rankCoord);
+      }
+      if (r === 7) {
+        const fileCoord = document.createElement('span');
+        fileCoord.className = 'sq-coord-file';
+        fileCoord.textContent = 'abcdefgh'[c];
+        sq.appendChild(fileCoord);
+      }
+
       const piece = game.board[r][c];
       if (piece && CBURNETT_SVGS[piece]) {
         const pieceEl = document.createElement('div');
@@ -3344,11 +3571,109 @@ function render2DBoard() {
 
       sq.addEventListener('click', () => {
         if (animating || aiThinking) return;
-        game.selectSquare(r, c);
-        render();
+        const res = game.selectSquare(r, c);
+        if (res.type === 'PIECE_SELECTED') {
+          audio.playSelect();
+          render();
+        } else if (res.type === 'MOVE_COMPLETED') {
+          render(res.move);
+        } else {
+          render();
+        }
       });
 
       boardEl.appendChild(sq);
+    }
+  }
+
+  // Update 2D In-Game Match Details Strip
+  const b2dStatusDot = document.getElementById('board2dStatusDot');
+  const b2dStatusText = document.getElementById('board2dStatusText');
+  const b2dMoveCount = document.getElementById('board2dMoveCount');
+  const b2dMovesRibbon = document.getElementById('board2dMovesRibbon');
+  const b2dWhiteScore = document.getElementById('board2dWhiteScore');
+  const b2dBlackScore = document.getElementById('board2dBlackScore');
+  const b2dAdvantageLabel = document.getElementById('board2dAdvantageLabel');
+  const b2dMaterialWhite = document.getElementById('board2dMaterialWhite');
+  const b2dMaterialBlack = document.getElementById('board2dMaterialBlack');
+
+  if (b2dMoveCount) {
+    b2dMoveCount.textContent = game.history.length;
+  }
+
+  if (b2dStatusText) {
+    if (game.gameOver) {
+      b2dStatusText.textContent = game.gameResult === 'checkmate'
+        ? `${game.winner === 'white' ? 'White' : 'Black'} Won!`
+        : 'Game Drawn';
+      if (b2dStatusDot) b2dStatusDot.style.background = '#d4b262';
+    } else if (game.gameResult === 'check') {
+      b2dStatusText.textContent = `${isWhiteTurn ? 'White' : 'Black'} in CHECK!`;
+      if (b2dStatusDot) b2dStatusDot.style.background = '#ef4444';
+    } else if (aiThinking && !isWhiteTurn) {
+      b2dStatusText.textContent = 'AI Thinking...';
+      if (b2dStatusDot) b2dStatusDot.style.background = '#60a5fa';
+    } else {
+      b2dStatusText.textContent = `${isWhiteTurn ? 'White' : 'Black'} to move`;
+      if (b2dStatusDot) b2dStatusDot.style.background = isWhiteTurn ? '#e2be6c' : '#60a5fa';
+    }
+  }
+
+  // Live Move History Ribbon
+  if (b2dMovesRibbon) {
+    if (!game.moveHistory || game.moveHistory.length === 0) {
+      b2dMovesRibbon.innerHTML = '<span style="color:#64748b;font-size:10px;font-style:italic;">No moves played yet</span>';
+    } else {
+      let ribbonHtml = '';
+      for (let i = 0; i < game.moveHistory.length; i += 2) {
+        const turnNum = Math.floor(i / 2) + 1;
+        const wMove = game.moveHistory[i];
+        const bMove = game.moveHistory[i + 1];
+        const isLatest = i === game.moveHistory.length - 1 || (bMove && i + 1 === game.moveHistory.length - 1);
+
+        const wPieceSym = wMove.piece && wMove.piece !== '♙' && wMove.piece !== '♟' ? wMove.piece : '';
+        const wNotation = `${wPieceSym}${wMove.capture ? 'x' : ''}${wMove.to}${wMove.promotion ? '=' + wMove.promotion : ''}`;
+
+        let bNotation = '';
+        if (bMove) {
+          const bPieceSym = bMove.piece && bMove.piece !== '♙' && bMove.piece !== '♟' ? bMove.piece : '';
+          bNotation = `${bPieceSym}${bMove.capture ? 'x' : ''}${bMove.to}${bMove.promotion ? '=' + bMove.promotion : ''}`;
+        }
+
+        ribbonHtml += `
+          <div class="board2d-move-pill ${isLatest ? 'latest' : ''}">
+            <span class="turn-num">${turnNum}.</span>
+            <span>${wNotation}</span>
+            ${bNotation ? `<span style="margin-left:3px;color:#93c5fd;">${bNotation}</span>` : ''}
+          </div>
+        `;
+      }
+      b2dMovesRibbon.innerHTML = ribbonHtml;
+      b2dMovesRibbon.scrollLeft = b2dMovesRibbon.scrollWidth;
+    }
+  }
+
+  // Material Bar & Scores
+  if (b2dWhiteScore) b2dWhiteScore.textContent = `White: ${whiteScore}`;
+  if (b2dBlackScore) b2dBlackScore.textContent = `Black: ${blackScore}`;
+
+  const totalMaterial = whiteScore + blackScore;
+  const whitePct = totalMaterial > 0 ? (whiteScore / totalMaterial) * 100 : 50;
+  const blackPct = 100 - whitePct;
+
+  if (b2dMaterialWhite) b2dMaterialWhite.style.width = `${whitePct}%`;
+  if (b2dMaterialBlack) b2dMaterialBlack.style.width = `${blackPct}%`;
+
+  if (b2dAdvantageLabel) {
+    if (lead > 0) {
+      b2dAdvantageLabel.textContent = `+${lead} White`;
+      b2dAdvantageLabel.style.color = '#d4b262';
+    } else if (lead < 0) {
+      b2dAdvantageLabel.textContent = `+${Math.abs(lead)} Black`;
+      b2dAdvantageLabel.style.color = '#60a5fa';
+    } else {
+      b2dAdvantageLabel.textContent = 'Equal Material';
+      b2dAdvantageLabel.style.color = '#94a3b8';
     }
   }
 }
@@ -3356,6 +3681,8 @@ function render2DBoard() {
 function toggle2D3DView() {
   if (animating) return;
   is2DView = !is2DView;
+
+  document.body.classList.toggle('view-2d-active', is2DView);
 
   const boardWrap2d = document.getElementById('board2d-wrap');
   const canvasContainer = document.getElementById('canvas-container');
@@ -3370,7 +3697,7 @@ function toggle2D3DView() {
       canvasContainer.style.opacity = '0';
       canvasContainer.style.pointerEvents = 'none';
     }
-    updateIcons('#ico-eye');
+    updateIcons('#ico-cube');
     render2DBoard();
   } else {
     if (boardWrap2d) boardWrap2d.style.display = 'none';
@@ -3583,13 +3910,13 @@ renderer.domElement.addEventListener(
                 animateMove(
                   move,
                   () => {
-                    render();
+                    render(move);
                   }
                 );
 
               } else {
 
-                render();
+                render(move);
               }
             }
           );
@@ -3631,16 +3958,20 @@ renderer.domElement.addEventListener(
         animateMove(
           move,
           () => {
-            render();
+            render(move);
           }
         );
 
       } else {
 
-        render();
+        render(move);
       }
 
     } else {
+
+      if (result.type === 'PIECE_SELECTED') {
+        audio.playSelect();
+      }
 
       render();
     }
@@ -3773,18 +4104,20 @@ function fitBoardToViewport() {
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
 
-  const boardSize = 9.8; // Chessboard diameter with margins
+  const isMobile = isMobileLayout();
+  const boardSizeX = isMobile ? 9.8 : 12.2;
+  const boardSizeZ = isMobile ? 12.4 : 9.8;
   const fovRad = (camera.fov * Math.PI) / 180;
   const halfFovHeight = Math.tan(fovRad / 2);
   const halfFovWidth = halfFovHeight * aspect;
 
-  const distHeight = boardSize / (2 * halfFovHeight);
-  const distWidth = boardSize / (2 * halfFovWidth);
+  const distHeight = boardSizeZ / (2 * halfFovHeight);
+  const distWidth = boardSizeX / (2 * halfFovWidth);
   let targetDist = Math.max(distHeight, distWidth);
 
-  // Add 15% safety margin on mobile portrait screens so the board is 100% visible without clipping!
-  if (width < 768) {
-    targetDist *= 1.15;
+  // Add safety margin on mobile portrait screens so the board and trays are 100% visible without clipping!
+  if (isMobile) {
+    targetDist *= 1.10;
   } else if (width < 1100) {
     targetDist *= 1.05;
   }
@@ -3823,6 +4156,8 @@ window.addEventListener(
       )
     );
 
+    updateGraveyardTrays();
+    renderCapturedStats();
     fitBoardToViewport();
   }
 );
@@ -3905,6 +4240,20 @@ function animate() {
     controls.update();
   }
 
+  // Atmospheric particle drift
+  if (ambientParticles) {
+    const posArr = ambientParticles.geometry.attributes.position.array;
+    for (let i = 0; i < particleCount; i++) {
+      posArr[i * 3 + 1] += particleVel[i].y;
+      particleVel[i].wobble += 0.01;
+      posArr[i * 3] += Math.sin(particleVel[i].wobble) * 0.0015;
+      if (posArr[i * 3 + 1] > 8.5) {
+        posArr[i * 3 + 1] = 0.3;
+      }
+    }
+    ambientParticles.geometry.attributes.position.needsUpdate = true;
+  }
+
   renderer.render(
     scene,
     camera
@@ -3916,6 +4265,7 @@ function animate() {
 }
 
 pieceModelsReady = true;
+document.body.classList.add('view-2d-active');
 render();
 fitBoardToViewport();
 animate();

@@ -289,113 +289,179 @@
     /* ============================================================
        GAME TOP BAR
        ============================================================ */
+    /* ============================================================
+       GAME TOP BAR & INTEGRATED TURN BADGE
+       ============================================================ */
     .game-topbar {
       position: fixed;
-      top: max(8px, env(safe-area-inset-top));
-      left: 12px;
-      right: 12px;
+      top: 0;
+      left: 0;
+      right: 0;
       z-index: 30;
+      height: calc(46px + env(safe-area-inset-top));
+      padding: 0 10px;
+      padding-top: env(safe-area-inset-top));
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 8px 14px;
-      background: #0e121e;
-      border-radius: 12px;
-      border: 1px solid #1c2438;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      gap: 6px;
+      background: rgba(9, 13, 22, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
     }
 
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-
-    .topbar-divider {
-      width: 1px;
-      height: 18px;
-      background: #1c2438;
-    }
-
-    .game-topbar .brand {
-      display: flex;
-      align-items: center;
       gap: 6px;
-    }
-
-    .game-topbar .brand-icon {
-      color: #d4b262;
-      display: flex;
-    }
-
-    .game-topbar .brand h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 13px;
-      font-weight: 800;
-      color: #d4b262;
-      letter-spacing: 0.8px;
-      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .topbar-center {
       display: flex;
       align-items: center;
       justify-content: center;
+      flex: 1;
+      min-width: 0;
+      padding: 0 4px;
     }
-    .segmented-control {
+
+    .topbar-right {
       display: flex;
       align-items: center;
-      background: #141926;
-      padding: 3px;
-      border-radius: 8px;
-      border: 1px solid #222b3e;
-      height: 36px;
-      box-sizing: border-box;
-      gap: 2px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
-    .segmented-control .btn {
-      border: none;
-      background: transparent;
-      border-radius: 6px;
-      padding: 0 10px;
-      height: 28px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #94a3b8;
-    }
-
-    .segmented-control .btn:hover {
-      background: #1e2638;
-      color: #f1f5f9;
-    }
-
-    .game-topbar .top-controls {
-      display: flex;
+    /* ============================================================
+       INTEGRATED TURN BADGE
+       ============================================================ */
+    .turn-badge {
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+      background: rgba(20, 26, 40, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f1ebd8;
+      max-width: 100%;
+    }
+
+    .turn-badge .turn-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #e2be6c;
+      box-shadow: 0 0 6px #e2be6c;
+      flex-shrink: 0;
+      animation: turnDotPulse 2s infinite ease-in-out;
+    }
+
+    .turn-badge .turn-piece-icon {
+      font-size: 14px;
+      line-height: 1;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .turn-badge .turn-label {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 11.5px;
+      letter-spacing: 0.3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* White Turn Badge */
+    .turn-badge.turn-white {
+      background: rgba(226, 190, 108, 0.12);
+      border-color: rgba(226, 190, 108, 0.4);
+      color: #f6eedb;
+    }
+    .turn-badge.turn-white .turn-dot {
+      background: #e2be6c;
+      box-shadow: 0 0 8px #e2be6c;
+    }
+    .turn-badge.turn-white .turn-piece-icon {
+      color: #ffffff;
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+    }
+
+    /* Black Turn Badge */
+    .turn-badge.turn-black {
+      background: rgba(96, 165, 250, 0.12);
+      border-color: rgba(96, 165, 250, 0.4);
+      color: #dbeafe;
+    }
+    .turn-badge.turn-black .turn-dot {
+      background: #60a5fa;
+      box-shadow: 0 0 8px #60a5fa;
+    }
+    .turn-badge.turn-black .turn-piece-icon {
+      color: #93c5fd;
+      filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.6));
+    }
+
+    /* Check State Badge */
+    .turn-badge.in-check {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.8);
+      color: #fecaca;
+      animation: checkBadgePulse 1s infinite alternate ease-in-out;
+    }
+    .turn-badge.in-check .turn-dot {
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    /* Game Over State Badge */
+    .turn-badge.game-over {
+      background: rgba(212, 178, 98, 0.18);
+      border-color: rgba(212, 178, 98, 0.6);
+      color: #fef08a;
+    }
+
+    @keyframes turnDotPulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    @keyframes checkBadgePulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.03); }
     }
 
     /* ============================================================
        BUTTONS & CONTROLS DESIGN SYSTEM
        ============================================================ */
     .btn {
-      border: 1px solid #222b3e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      padding: 0 12px;
+      padding: 0 10px;
       font-weight: 600;
-      font-size: 12px;
-      height: 36px;
+      font-size: 11px;
+      height: 32px;
+      min-height: 32px;
       box-sizing: border-box;
       cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      background: #141926;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+      background: rgba(20, 26, 40, 0.9);
       color: #cbd5e1;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       touch-action: manipulation;
       -webkit-appearance: none;
       line-height: 1;
@@ -403,11 +469,11 @@
 
     .btn:hover:not(:disabled) {
       background: #1e2638;
-      border-color: #2e3b56;
+      border-color: #3b4968;
       color: #ffffff;
     }
 
-    .btn:active:not(:disabled) { transform: scale(0.97); }
+    .btn:active:not(:disabled) { transform: scale(0.96); }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .btn-primary {
@@ -423,70 +489,40 @@
       border-color: #e0c175;
     }
 
-    .btn-primary:active:not(:disabled) { background: #c8a34f; }
-
     .btn-icon {
       padding: 0;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       justify-content: center;
-    }
-
-    .mode-select-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #64748b;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+      flex-shrink: 0;
     }
 
     .mode-select {
-      background: #141926;
-      border: 1px solid #222b3e;
+      background: rgba(20, 26, 40, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: #cbd5e1;
       border-radius: 8px;
-      padding: 0 10px;
-      font-size: 12px;
+      padding: 0 6px;
+      font-size: 11px;
       font-weight: 600;
-      height: 36px;
+      height: 32px;
+      min-height: 32px;
       box-sizing: border-box;
       outline: none;
       cursor: pointer;
       -webkit-appearance: none;
       font-family: 'Inter', sans-serif;
+      text-align: center;
     }
 
     .mode-select:hover {
-      border-color: #2e3b56;
+      border-color: #3b4968;
       background: #1e2638;
     }
 
     .mode-select option { background: #0f1320; color: #cbd5e1; }
 
-    .turn-indicator {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0 12px;
-      height: 36px;
-      box-sizing: border-box;
-      border-radius: 8px;
-      background: #141926;
-      border: 1px solid #222b3e;
-      font-size: 12px;
-      font-weight: 600;
-      color: #d4b262;
-    }
-
-    .turn-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #d4b262;
-    }
+    .camera-hint { display: none !important; }
 
     /* ============================================================
        MOBILE BOTTOM BAR
@@ -565,31 +601,166 @@
     }
 
     /* ============================================================
-       2D FLAT CHESSBOARD VIEW
+       2D CHESS.COM STYLE VIEW LAYOUT
        ============================================================ */
     .board2d-wrap {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: calc(46px + env(safe-area-inset-top));
+      bottom: calc(56px + env(safe-area-inset-bottom));
+      left: 0;
+      right: 0;
       z-index: 15;
       display: flex;
       align-items: center;
       justify-content: center;
       pointer-events: auto;
+      background: radial-gradient(circle at 50% 40%, #111728 0%, #070a10 80%);
+      overflow: hidden;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    @media (min-width: 1101px) {
+      .board2d-wrap {
+        bottom: 0;
+        right: 0;
+        left: 0;
+      }
+    }
+
+    .board2d-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: min(94vw, min(calc(100dvh - 165px), 520px));
+      max-width: 520px;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Player Strip (Opponent Top / Player Bottom) */
+    .player-strip {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(16, 22, 36, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    .player-strip.active-turn {
+      background: rgba(22, 30, 48, 0.95);
+      border-color: rgba(212, 178, 98, 0.4);
+      box-shadow: 0 0 12px rgba(212, 178, 98, 0.15);
+    }
+
+    .player-strip-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .strip-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #1c2438;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .strip-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .strip-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .strip-captures {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      color: #94a3b8;
+      min-height: 14px;
+    }
+
+    .strip-captures span {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+    }
+
+    .player-strip-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .material-advantage {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      color: #d4b262;
+      background: rgba(212, 178, 98, 0.15);
+      border-radius: 4px;
+      padding: 1px 5px;
+      line-height: 1.2;
+    }
+
+    .strip-turn-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    .player-strip.active-turn .strip-turn-dot {
+      background: #e2be6c;
+      box-shadow: 0 0 6px #e2be6c;
+    }
+
+    /* 2D Chessboard Frame */
+    .board2d-frame {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.08);
+      position: relative;
     }
 
     .board2d {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       grid-template-rows: repeat(8, 1fr);
-      width: min(84vw, min(70vh, 540px));
-      height: min(84vw, min(70vh, 540px));
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 0 3px rgba(255, 255, 255, 0.1);
-      user-select: none;
-      -webkit-user-select: none;
+      width: 100%;
+      height: 100%;
     }
 
     .sq2d {
@@ -599,18 +770,28 @@
       justify-content: center;
       cursor: pointer;
       box-sizing: border-box;
+      transition: background-color 0.1s ease;
     }
 
-    .sq2d.light { background-color: #e8d5a3; color: #3d2314; }
-    .sq2d.dark { background-color: #3d2314; color: #e8d5a3; }
+    /* Theme colors: Ivory & Walnut Amber */
+    .sq2d.light { background-color: #f0d9b5; }
+    .sq2d.dark { background-color: #b58863; }
 
-    .sq2d.selected { background-color: #d4b262 !important; }
-    .sq2d.last-move { background-color: rgba(212, 178, 98, 0.45) !important; }
-    .sq2d.check { background-color: #e05555 !important; }
+    .sq2d.selected {
+      background-color: #f7e65f !important;
+    }
+
+    .sq2d.last-move {
+      background-color: rgba(247, 230, 95, 0.65) !important;
+    }
+
+    .sq2d.check {
+      background: radial-gradient(circle, #f87171 0%, #dc2626 70%, #991b1b 100%) !important;
+    }
 
     .sq2d .piece2d {
-      width: 88%;
-      height: 88%;
+      width: 90%;
+      height: 90%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -618,30 +799,201 @@
       z-index: 2;
     }
 
-    .sq2d .piece2d svg {
+    .sq2d .piece2d img {
       width: 100%;
       height: 100%;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
     }
 
     .sq2d .dot2d {
       position: absolute;
-      width: 28%;
-      height: 28%;
+      width: 32%;
+      height: 32%;
       border-radius: 50%;
-      background: rgba(212, 178, 98, 0.65);
+      background: rgba(20, 20, 20, 0.28);
       pointer-events: none;
       z-index: 3;
     }
 
     .sq2d .ring2d {
       position: absolute;
-      width: 84%;
-      height: 84%;
-      border: 4px solid rgba(224, 112, 112, 0.7);
+      width: 86%;
+      height: 86%;
+      border: 4px solid rgba(20, 20, 20, 0.28);
       border-radius: 50%;
       pointer-events: none;
       z-index: 3;
+    }
+
+    /* Coordinates in Chess.com style inside squares */
+    .sq-coord-rank {
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .sq-coord-file {
+      position: absolute;
+      bottom: 2px;
+      right: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .sq2d.light .sq-coord-rank,
+    .sq2d.light .sq-coord-file {
+      color: #b58863;
+    }
+
+    .sq2d.dark .sq-coord-rank,
+    .sq2d.dark .sq-coord-file {
+      color: #f0d9b5;
+    }
+
+    /* ============================================================
+       2D IN-GAME MATCH DETAILS CARD (Live Move Feed & Material Bar)
+       ============================================================ */
+    .board2d-details-card {
+      width: 100%;
+      background: rgba(16, 22, 36, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 7px 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .board2d-details-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .board2d-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .board2d-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e2be6c;
+      box-shadow: 0 0 6px #e2be6c;
+      transition: background 0.2s ease;
+    }
+
+    .board2d-moves-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Move History Ribbon (Horizontal Scrollable) */
+    .board2d-moves-ribbon {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      padding: 2px 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      min-height: 22px;
+    }
+    .board2d-moves-ribbon::-webkit-scrollbar { display: none; }
+
+    .board2d-move-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 10.5px;
+      background: #141a2a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #cbd5e1;
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+
+    .board2d-move-pill.latest {
+      border-color: rgba(212, 178, 98, 0.6);
+      background: rgba(212, 178, 98, 0.16);
+      color: #ffd36e;
+      font-weight: 700;
+      box-shadow: 0 0 8px rgba(212, 178, 98, 0.2);
+    }
+
+    .board2d-move-pill .turn-num {
+      color: #64748b;
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    /* Material Balance Bar */
+    .board2d-material-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-top: 1px;
+    }
+
+    .board2d-material-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.2px;
+    }
+
+    .board2d-material-track {
+      height: 4px;
+      width: 100%;
+      background: #0d111c;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .board2d-material-white {
+      height: 100%;
+      background: #d4b262;
+      width: 50%;
+      transition: width 0.35s ease;
+    }
+
+    .board2d-material-black {
+      height: 100%;
+      background: #475569;
+      width: 50%;
+      transition: width 0.35s ease;
     }
 
     /* ============================================================
@@ -668,6 +1020,61 @@
 
     .stats-panel-left { left: 12px; }
     .stats-panel-right { right: 12px; }
+
+    /* Universal Details & History Modal Overlay */
+    .stats-panel.mobile-active {
+      display: flex !important;
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: min(92vw, 360px) !important;
+      max-width: 360px !important;
+      height: min(78vh, 520px) !important;
+      max-height: 520px !important;
+      z-index: 1000 !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(212, 178, 98, 0.3) !important;
+      background: rgba(12, 17, 28, 0.98) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(212, 178, 98, 0.35) !important;
+      border-radius: 14px !important;
+      padding: 16px !important;
+    }
+
+    .stats-panel.mobile-active .panel-switch-btn {
+      display: block !important;
+    }
+
+    .panel-close-btn {
+      display: inline-flex;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+
+    .panel-close-btn:hover {
+      color: #ffffff;
+    }
+
+    .mobile-stats-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+    }
+
+    .mobile-stats-backdrop.active {
+      display: block !important;
+    }
 
     .panel-header {
       display: flex;
@@ -1035,11 +1442,8 @@
       .mobile-bottom-bar { display: none; }
       .stats-panel { display: flex; }
       .bottom-status { bottom: 14px; }
-      .camera-hint { top: 86px; }
-      .game-topbar {
-        left: 12px; right: 12px;
-        padding: 10px 16px;
-      }
+      .btn-desktop-only { display: inline-flex; }
+      .game-topbar { padding: 0 16px; }
     }
 
     /* Hide close and switch buttons by default on desktop */
@@ -1051,33 +1455,47 @@
        RESPONSIVE — Mobile & Tablet (< 1100px)
        ============================================================ */
     @media (max-width: 1100px) {
-      .game-topbar {
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        border-radius: 0;
-        border-left: none; border-right: none; border-top: none;
-        padding: 10px 12px;
-        padding-top: max(8px, env(safe-area-inset-top));
-        gap: 8px;
+      .btn-desktop-only { display: none !important; }
+      .bottom-status { display: none !important; }
+
+      #canvas-container {
+        top: calc(46px + env(safe-area-inset-top));
+        height: calc(100vh - 46px - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        height: calc(100dvh - 46px - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       }
+
       .mobile-bottom-bar {
         position: fixed;
         bottom: 0; left: 0; right: 0;
         border-radius: 0;
         border-left: none; border-right: none; border-bottom: none;
-        padding: 8px 10px;
-        padding-bottom: max(8px, env(safe-area-inset-bottom));
+        padding: 6px 12px;
+        padding-bottom: max(6px, env(safe-area-inset-bottom));
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 6px;
+        background: rgba(10, 14, 23, 0.96);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: 30;
       }
-      #canvas-container {
-        top: calc(54px + env(safe-area-inset-top));
-        height: calc(100vh - 54px - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        height: calc(100dvh - 54px - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      .mobile-bottom-bar .btn {
+        flex: 1;
+        max-width: 80px;
+        min-height: 42px;
+        padding: 4px 2px;
+        font-size: 10px;
+        flex-direction: column;
+        gap: 2px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
       }
-      .bottom-status {
-        display: none !important;
-      }
-      .camera-hint {
-        top: calc(66px + env(safe-area-inset-top));
+      .mobile-bottom-bar .btn .icon {
+        width: 18px;
+        height: 18px;
       }
       
       /* Mobile Stats Panels Modal overlay */
@@ -1122,44 +1540,22 @@
       .mobile-stats-backdrop.active {
         display: block;
       }
-      
-      #newGameBtn, #undoBtn {
-        display: none !important;
-      }
-
     }
 
     /* ============================================================
-       RESPONSIVE — Small mobile
+       RESPONSIVE — Small mobile (< 420px)
        ============================================================ */
     @media (max-width: 420px) {
       .game-topbar {
-        padding: 6px 8px;
-        padding-top: max(6px, env(safe-area-inset-top));
+        padding: 0 6px;
+        padding-top: env(safe-area-inset-top);
         gap: 4px;
       }
-      .game-topbar .brand h1 { font-size: 11px; }
-      .game-topbar .top-controls { gap: 3px; }
-      .game-topbar .top-controls .turn-indicator { display: none; }
-      .game-topbar .top-controls .mode-select-wrap span { display: none; }
-      .btn { padding: 6px 8px; font-size: 9px; min-height: 32px; }
-      .mode-select { min-height: 32px; font-size: 9px; padding: 4px 6px; }
-      .bottom-status { bottom: 58px; font-size: 10px; }
-      .mobile-bottom-bar .btn { min-height: 38px; font-size: 8px; }
-      .camera-hint { top: 52px; }
-      #canvas-container {
-        top: calc(44px + env(safe-area-inset-top));
-        height: calc(100vh - 44px - 54px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        height: calc(100dvh - 44px - 54px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-      }
-      .mobile-floating-actions {
-        bottom: 68px;
-        right: 12px;
-      }
-      .floating-btn {
-        width: 38px;
-        height: 38px;
-      }
+      .btn-icon { width: 30px; height: 30px; }
+      .turn-badge { padding: 3px 8px; font-size: 10.5px; gap: 4px; }
+      .turn-badge .turn-label { font-size: 10.5px; }
+      .mode-select { height: 30px; font-size: 10px; padding: 0 4px; }
+      .mobile-bottom-bar .btn { min-height: 38px; font-size: 9px; }
     }
 
     /* Landscape / Short Height mobile viewport (< 500px) */
@@ -1271,7 +1667,10 @@
     <symbol id="ico-pawn" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3c0 1.11.61 2.08 1.5 2.6V9H9v2h1.5v2.28C8.65 14.03 7 15.88 7 18v1h10v-1c0-2.12-1.65-3.97-3.5-4.72V11H15V9h-1.5V7.6c.89-.52 1.5-1.49 1.5-2.6a3 3 0 0 0-3-3z"/></symbol>
     <symbol id="ico-drag" viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></symbol>
     <symbol id="ico-chess-piece" viewBox="0 0 24 24"><path d="M19 22H5v-2h14v2M17.16 8.26A4.96 4.96 0 0 0 17 7c0-2.76-2.24-5-5-5S7 4.24 7 7c0 .46.07.9.18 1.31L4 15h4l-1 3h10l-1-3h4l-3.16-6.74z"/></symbol>
+    <symbol id="ico-cube" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.991.991 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9zM12 4.15L6.04 7.5 12 10.85l5.96-3.35L12 4.15zM5 9.27v6.07l6 3.38v-6.07L5 9.27zm14 0l-6 3.38v6.07l6-3.38V9.27z"/></symbol>
     <symbol id="ico-grid" viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm2 2v6h6V5H5zm0 8v6h6v-6H5zm8-8v6h6V5h-6zm6 8h-6v6h6v-6z" fill="currentColor"/></symbol>
+    <symbol id="ico-music" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></symbol>
+    <symbol id="ico-mute" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></symbol>
   </svg>
 
   <!-- ============================================================
@@ -1324,63 +1723,113 @@
        ============================================================ -->
   <div id="gameScreen" class="screen">
     <div class="game-topbar">
-      <!-- Left: Home & Brand Identity -->
+      <!-- Left: Navigation & 2D/3D View -->
       <div class="topbar-left">
         <button class="btn btn-icon" id="homeBtn" title="Return to Main Menu">
           <span class="icon icon-md"><svg><use href="#ico-home"/></svg></span>
         </button>
-        <div class="topbar-divider"></div>
-        <div class="brand">
-          <span class="brand-icon"><span class="icon icon-md"><svg><use href="#ico-crown"/></svg></span></span>
-          <h1>CHESS ROYALE</h1>
-        </div>
+        <button class="btn btn-icon" id="viewToggleBtn" title="Toggle 2D/3D View">
+          <span class="icon icon-md"><svg><use id="viewToggleIcon" href="#ico-cube"/></svg></span>
+        </button>
       </div>
 
-      <!-- Center: View & Details Controls -->
+      <!-- Center: Integrated Turn Indicator Badge -->
       <div class="topbar-center">
-        <div class="segmented-control">
-          <button class="btn" id="viewToggleBtn" title="Toggle 2D/3D View">
-            <span class="icon icon-sm"><svg><use id="viewToggleIcon" href="#ico-grid"/></svg></span>
-            <span class="btn-label">2D/3D</span>
-          </button>
-          <button class="btn" id="matchDetailsBtn" title="Match Details">
-            <span class="icon icon-sm"><svg><use href="#ico-scroll"/></svg></span>
-            <span class="btn-label">Details</span>
-          </button>
+        <div class="turn-badge turn-white" id="turnPill">
+          <span class="turn-dot" id="turnDot"></span>
+          <span class="turn-piece-icon" id="turnPieceIcon">♔</span>
+          <span class="turn-label" id="turnPillText">White's Turn</span>
         </div>
       </div>
 
-      <!-- Right: Game Mode & Actions -->
-      <div class="top-controls">
-        <span class="turn-indicator" id="turnPill">
-          <span class="turn-dot"></span>
-          <span id="turnPillText">White to move</span>
-        </span>
-        <label class="mode-select-wrap">
-          <span>Mode</span>
-          <select id="modeSelect" class="mode-select">
-            <option value="pvp">PvP</option>
-            <option value="ai-easy" selected>Easy</option>
-            <option value="ai-hard">Hard</option>
-          </select>
-        </label>
-        <button id="newGameBtn" class="btn btn-primary">
+      <!-- Right: Details, Mode & Desktop Actions -->
+      <div class="topbar-right">
+        <button class="btn btn-icon" id="matchDetailsBtn" title="Match Details & Move History">
+          <span class="icon icon-md"><svg><use href="#ico-scroll"/></svg></span>
+        </button>
+        <select id="modeSelect" class="mode-select" title="Difficulty Mode">
+          <option value="pvp">PvP</option>
+          <option value="ai-easy" selected>Easy</option>
+          <option value="ai-hard">Hard</option>
+        </select>
+        <button id="newGameBtn" class="btn btn-primary btn-desktop-only">
           <span class="icon icon-sm"><svg><use href="#ico-refresh"/></svg></span> New
         </button>
-        <button id="undoBtn" class="btn" disabled>
+        <button id="undoBtn" class="btn btn-desktop-only" disabled>
           <span class="icon icon-sm"><svg><use href="#ico-undo"/></svg></span> Undo
         </button>
       </div>
     </div>
 
-    <div class="camera-hint" aria-hidden="true">
-      <span class="icon icon-sm"><svg><use href="#ico-drag"/></svg></span>
-      Drag to rotate · Pinch to zoom
-    </div>
+    <!-- 2D Chess.com Style View Layout -->
+    <div id="board2d-wrap" class="board2d-wrap" style="display:flex;">
+      <div class="board2d-layout">
+        <!-- Top Opponent Player Strip -->
+        <div class="player-strip player-strip-top" id="stripTop">
+          <div class="player-strip-left">
+            <div class="strip-avatar" id="topAvatar">♚</div>
+            <div class="strip-details">
+              <div class="strip-name" id="topName">Black</div>
+              <div class="strip-captures" id="topCaptures"></div>
+            </div>
+          </div>
+          <div class="player-strip-right">
+            <span class="material-advantage" id="topLead" style="display:none;">+0</span>
+            <div class="strip-turn-dot" id="topTurnDot"></div>
+          </div>
+        </div>
 
-    <!-- 2D Board Overlay -->
-    <div id="board2d-wrap" class="board2d-wrap" style="display:none;">
-      <div id="board2d" class="board2d"></div>
+        <!-- 2D Chessboard Grid Frame -->
+        <div class="board2d-frame">
+          <div id="board2d" class="board2d"></div>
+        </div>
+
+        <!-- Bottom Player Strip (You / White) -->
+        <div class="player-strip player-strip-bottom" id="stripBottom">
+          <div class="player-strip-left">
+            <div class="strip-avatar" id="bottomAvatar">♔</div>
+            <div class="strip-details">
+              <div class="strip-name" id="bottomName">White (You)</div>
+              <div class="strip-captures" id="bottomCaptures"></div>
+            </div>
+          </div>
+          <div class="player-strip-right">
+            <span class="material-advantage" id="bottomLead" style="display:none;">+0</span>
+            <div class="strip-turn-dot" id="bottomTurnDot"></div>
+          </div>
+        </div>
+
+        <!-- 2D In-Game Match Details Strip (Live Move Feed & Material Bar) -->
+        <div class="board2d-details-card" id="board2dDetailsCard">
+          <div class="board2d-details-top">
+            <div class="board2d-status-badge">
+              <span class="board2d-status-dot" id="board2dStatusDot"></span>
+              <span id="board2dStatusText">White to move</span>
+            </div>
+            <div class="board2d-moves-badge">
+              Moves: <strong id="board2dMoveCount" style="color:#ffd36e;">0</strong>
+            </div>
+          </div>
+
+          <!-- Real-time Move History Ribbon -->
+          <div class="board2d-moves-ribbon" id="board2dMovesRibbon">
+            <span style="color:#64748b;font-size:10px;font-style:italic;">No moves played yet</span>
+          </div>
+
+          <!-- Material Balance Bar -->
+          <div class="board2d-material-bar">
+            <div class="board2d-material-labels">
+              <span id="board2dWhiteScore">White: 39</span>
+              <span id="board2dAdvantageLabel" style="color:#d4b262;">Equal Material</span>
+              <span id="board2dBlackScore">Black: 39</span>
+            </div>
+            <div class="board2d-material-track">
+              <div class="board2d-material-white" id="board2dMaterialWhite" style="width:50%;"></div>
+              <div class="board2d-material-black" id="board2dMaterialBlack" style="width:50%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Left Stats (desktop / mobile overlay) -->
@@ -1559,15 +2008,12 @@
     }
 
     function openMatchDetails() {
-      if (window.innerWidth <= 1100) {
+      const isAlreadyActive = statsLeftEl?.classList.contains('mobile-active') || statsRightEl?.classList.contains('mobile-active');
+      if (isAlreadyActive) {
+        closeMobileStats();
+      } else {
         statsLeftEl?.classList.add('mobile-active');
         statsBackdropEl?.classList.add('active');
-      } else {
-        if (statsLeftEl && statsRightEl) {
-          const isHidden = window.getComputedStyle(statsLeftEl).display === 'none';
-          statsLeftEl.style.display = isHidden ? 'flex' : 'none';
-          statsRightEl.style.display = isHidden ? 'flex' : 'none';
-        }
       }
     }
 
