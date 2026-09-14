@@ -2114,9 +2114,38 @@ function animateMove(
   const startTime = performance.now();
   animating = true;
 
-  const capturedGroup = squares[move.toRow][move.toCol].group;
-  const capturedRow = move.toRow;
-  const capturedCol = move.toCol;
+  // Handle Rook animation if this is a castling move
+  let rookFromGroup = null;
+  let rookStartPos = null;
+  let rookEndPos = null;
+  let rookFromCol = -1;
+  let rookToCol = -1;
+  const castlingRank = move.toRow;
+
+  if (move.castling) {
+    if (move.castling === 'king-side') {
+      rookFromCol = 7;
+      rookToCol = 5;
+    } else if (move.castling === 'queen-side') {
+      rookFromCol = 0;
+      rookToCol = 3;
+    }
+    rookFromGroup = squares[castlingRank]?.[rookFromCol]?.group;
+    if (rookFromGroup) {
+      rookStartPos = rookFromGroup.position.clone();
+      const rookToPos = getPos(castlingRank, rookToCol);
+      rookEndPos = new THREE.Vector3(rookToPos.x, 0.12, rookToPos.z);
+    }
+  }
+
+  // Handle en passant capture mesh target
+  let capturedGroup = squares[move.toRow][move.toCol].group;
+  let capturedRow = move.toRow;
+  let capturedCol = move.toCol;
+  if (move.enPassant) {
+    capturedRow = (move.fromRow === 6 || game.board[move.toRow][move.toCol] === PIECES.WP) ? move.toRow + 1 : move.toRow - 1;
+    capturedGroup = squares[capturedRow]?.[capturedCol]?.group;
+  }
 
   function step(time) {
     const t = Math.min((time - startTime) / duration, 1);
@@ -2126,12 +2155,28 @@ function animateMove(
     fromGroup.position.y = 0.12 + Math.sin(ease * Math.PI) * 0.35;
     fromGroup.rotation.y = startRotY;
 
+    if (rookFromGroup && rookStartPos && rookEndPos) {
+      rookFromGroup.position.lerpVectors(rookStartPos, rookEndPos, ease);
+      rookFromGroup.position.y = 0.12 + Math.sin(ease * Math.PI) * 0.25;
+    }
+
     if (t < 1) {
       requestAnimationFrame(step);
     } else {
       fromGroup.position.copy(endPos);
       fromGroup.position.y = 0.12;
       fromGroup.rotation.y = startRotY;
+
+      if (rookFromGroup && rookEndPos) {
+        rookFromGroup.position.copy(rookEndPos);
+        rookFromGroup.position.y = 0.12;
+
+        squares[castlingRank][rookFromCol].group = null;
+        squares[castlingRank][rookFromCol].pieceType = PIECES.EMPTY;
+
+        squares[castlingRank][rookToCol].group = rookFromGroup;
+        squares[castlingRank][rookToCol].pieceType = game.board[castlingRank][rookToCol];
+      }
 
       // Remove captured piece.
       if (
@@ -2838,11 +2883,72 @@ function render(
           3.5;
 
         // ----------------------------------------------------
-        // SPECIAL MOVES
+        // SPECIAL MOVES (Castling & En Passant)
         // ----------------------------------------------------
 
         if (
-          mv.castling ||
+          mv.castling
+        ) {
+
+          sqMat.emissive.set(
+            0xffd700
+          );
+
+          sqMat.emissiveIntensity =
+            0.8;
+
+          const ringGeo =
+            new THREE.TorusGeometry(
+              0.28,
+              0.045,
+              16,
+              32
+            );
+
+          const ringMat =
+            new THREE.MeshBasicMaterial({
+              color: 0xffd700
+            });
+
+          const ring =
+            new THREE.Mesh(
+              ringGeo,
+              ringMat
+            );
+
+          ring.rotation.x =
+            Math.PI / 2;
+
+          ring.position.set(
+            targetX,
+            0.08,
+            targetZ
+          );
+
+          ring.userData = { row: mv.toRow, col: mv.toCol };
+          markersGroup.add(
+            ring
+          );
+
+          // Highlight the Partner Rook square in 3D
+          const rookCol = mv.castling === 'king-side' ? 7 : 0;
+          const rookSqMat = squares[mv.fromRow]?.[rookCol]?.mesh?.material;
+          if (rookSqMat) {
+            rookSqMat.emissive.set(0xffd700);
+            rookSqMat.emissiveIntensity = 0.6;
+
+            const rookRingGeo = new THREE.TorusGeometry(0.35, 0.035, 16, 32);
+            const rookRingMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+            const rookRing = new THREE.Mesh(rookRingGeo, rookRingMat);
+            rookRing.rotation.x = Math.PI / 2;
+            const rX = rookCol - 3.5;
+            const rZ = mv.fromRow - 3.5;
+            rookRing.position.set(rX, 0.08, rZ);
+            rookRing.userData = { row: mv.fromRow, col: rookCol };
+            markersGroup.add(rookRing);
+          }
+
+        } else if (
           mv.enPassant
         ) {
 
@@ -3500,9 +3606,44 @@ function render2DBoard() {
   }
 
   const validMap = new Map();
+  const castlingPartners = new Map();
+  const castlingTargets = new Map();
+
   if (game.selected) {
     const moves = game.validMoves.filter(m => m.fromRow === game.selected.row && m.fromCol === game.selected.col);
     moves.forEach(m => validMap.set(`${m.toRow},${m.toCol}`, m));
+
+    const selectedPiece = game.board[game.selected.row][game.selected.col];
+    const isKing = selectedPiece === PIECES.WK || selectedPiece === PIECES.BK;
+    const isRook = (game.currentPlayer === 'white' && selectedPiece === PIECES.WR) || (game.currentPlayer === 'black' && selectedPiece === PIECES.BR);
+    const rank = game.selected.row;
+
+    if (isKing) {
+      const castlingMoves = moves.filter(m => m.castling);
+      castlingMoves.forEach(cm => {
+        const isKingSide = cm.castling === 'king-side';
+        const rookCol = isKingSide ? 7 : 0;
+        castlingPartners.set(`${rank},${rookCol}`, {
+          label: isKingSide ? '🏰 O-O' : '🏰 O-O-O',
+          title: isKingSide ? 'Click to Castle King-side' : 'Click to Castle Queen-side'
+        });
+        castlingTargets.set(`${cm.toRow},${cm.toCol}`, {
+          label: isKingSide ? 'O-O' : 'O-O-O',
+          title: isKingSide ? 'Castle King-side' : 'Castle Queen-side'
+        });
+      });
+    } else if (isRook) {
+      const isKingSide = game.selected.col === 7;
+      const castlingType = isKingSide ? 'king-side' : 'queen-side';
+      const targetCol = isKingSide ? 6 : 2;
+      const canCastle = game.validMoves.some(m => m.fromRow === rank && m.fromCol === 4 && m.toRow === rank && m.toCol === targetCol && m.castling === castlingType);
+      if (canCastle) {
+        castlingPartners.set(`${rank},4`, {
+          label: isKingSide ? '🏰 Castle O-O' : '🏰 Castle O-O-O',
+          title: 'Click King to Castle'
+        });
+      }
+    }
   }
 
   let checkSquare = null;
@@ -3556,7 +3697,31 @@ function render2DBoard() {
         sq.appendChild(pieceEl);
       }
 
-      if (validMap.has(key)) {
+      // Visual cues for Castling Partner (e.g. Rook or King)
+      if (castlingPartners.has(key)) {
+        const cp = castlingPartners.get(key);
+        sq.classList.add('castling-partner');
+        sq.title = cp.title;
+        const badge = document.createElement('div');
+        badge.className = 'castling-badge2d';
+        badge.textContent = cp.label;
+        sq.appendChild(badge);
+      }
+
+      // Visual cues for Castling Target Square
+      if (castlingTargets.has(key)) {
+        const ct = castlingTargets.get(key);
+        sq.title = ct.title;
+        const targetRing = document.createElement('div');
+        targetRing.className = 'castling-target-ring2d';
+        targetRing.innerHTML = `<span class="castling-target-icon">🏰</span>`;
+        sq.appendChild(targetRing);
+
+        const badge = document.createElement('div');
+        badge.className = 'castling-badge2d';
+        badge.textContent = ct.label;
+        sq.appendChild(badge);
+      } else if (validMap.has(key)) {
         const move = validMap.get(key);
         if (move.capture || move.enPassant) {
           const ring = document.createElement('div');

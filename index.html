@@ -826,6 +826,72 @@
       z-index: 3;
     }
 
+    /* Castling visual cues in 2D */
+    .sq2d.castling-partner {
+      box-shadow: inset 0 0 0 3px #d4b262, 0 0 12px rgba(212, 178, 98, 0.7) !important;
+      animation: castling-glow 1.4s infinite alternate ease-in-out;
+      cursor: pointer;
+    }
+
+    @keyframes castling-glow {
+      0% {
+        box-shadow: inset 0 0 0 2.5px #d4b262, 0 0 6px rgba(212, 178, 98, 0.4);
+      }
+      100% {
+        box-shadow: inset 0 0 0 3.5px #f6e05e, 0 0 16px rgba(246, 224, 94, 0.9);
+      }
+    }
+
+    .sq2d .castling-badge2d {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #d4b262, #b8860b);
+      color: #0d1117;
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      letter-spacing: 0.3px;
+    }
+
+    .sq2d .castling-target-ring2d {
+      position: absolute;
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+      border: 3px dashed #d4b262;
+      background: rgba(212, 178, 98, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 3;
+      animation: castling-pulse 2s infinite ease-in-out;
+    }
+
+    .sq2d .castling-target-icon {
+      font-size: 13px;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 4;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+    }
+
+    @keyframes castling-pulse {
+      0% { transform: scale(0.92); opacity: 0.75; }
+      50% { transform: scale(1.04); opacity: 1; border-color: #f6e05e; }
+      100% { transform: scale(0.92); opacity: 0.75; }
+    }
+
     /* Coordinates in Chess.com style inside squares */
     .sq-coord-rank {
       position: absolute;

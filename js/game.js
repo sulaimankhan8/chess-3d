@@ -601,23 +601,71 @@ export class ChessGame {
     const piece = this.board[row][col];
     const ownsPiece = (this.currentPlayer === 'white' && this.isWhite(piece)) || (this.currentPlayer === 'black' && this.isBlack(piece));
 
-    if (ownsPiece) {
-      const ownMoves = this.validMoves.filter((move) => move.fromRow === row && move.fromCol === col);
-      if (ownMoves.length) {
-        this.selected = { row, col };
-        return { type: 'SELECTED', row, col };
-      }
-    }
-
+    // If a piece is already selected, check if the clicked square is a valid target or castling partner
     if (this.selected) {
-      const move = this.validMoves.find((item) => 
+      // 1. Exact coordinate match (e.g. King moves from e1 to g1/c1)
+      let move = this.validMoves.find((item) => 
         item.fromRow === this.selected.row && 
         item.fromCol === this.selected.col && 
         item.toRow === row && 
         item.toCol === col
       );
+
+      // 2. Castling convenience: King is selected and user clicks on Rook (h1/a1 or h8/a8)
+      if (!move) {
+        const selectedPiece = this.board[this.selected.row][this.selected.col];
+        const isKing = selectedPiece === PIECES.WK || selectedPiece === PIECES.BK;
+        if (isKing) {
+          const rank = this.selected.row;
+          if (row === rank && col === 7) {
+            // Clicked King-side Rook square -> match king-side castling
+            move = this.validMoves.find((item) =>
+              item.fromRow === this.selected.row &&
+              item.fromCol === this.selected.col &&
+              item.toRow === rank &&
+              item.toCol === 6 &&
+              item.castling === 'king-side'
+            );
+          } else if (row === rank && col === 0) {
+            // Clicked Queen-side Rook square -> match queen-side castling
+            move = this.validMoves.find((item) =>
+              item.fromRow === this.selected.row &&
+              item.fromCol === this.selected.col &&
+              item.toRow === rank &&
+              item.toCol === 2 &&
+              item.castling === 'queen-side'
+            );
+          }
+        } else {
+          // 3. Castling convenience: Rook is selected and user clicks on King (e1 or e8)
+          const isRook = (this.currentPlayer === 'white' && selectedPiece === PIECES.WR) || (this.currentPlayer === 'black' && selectedPiece === PIECES.BR);
+          if (isRook) {
+            const rank = this.selected.row;
+            if (row === rank && col === 4) {
+              const targetCol = this.selected.col === 7 ? 6 : 2;
+              const castlingType = this.selected.col === 7 ? 'king-side' : 'queen-side';
+              move = this.validMoves.find((item) =>
+                item.fromRow === rank &&
+                item.fromCol === 4 &&
+                item.toRow === rank &&
+                item.toCol === targetCol &&
+                item.castling === castlingType
+              );
+            }
+          }
+        }
+      }
+
       if (move) {
         return this.makeMove(move);
+      }
+    }
+
+    if (ownsPiece) {
+      const ownMoves = this.validMoves.filter((move) => move.fromRow === row && move.fromCol === col);
+      if (ownMoves.length) {
+        this.selected = { row, col };
+        return { type: 'SELECTED', row, col };
       }
     }
 
