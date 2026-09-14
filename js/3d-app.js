@@ -1228,11 +1228,17 @@ const game =
 
 const ai =
   new ChessAI(
-    'easy'
+    'master'
   );
 
 let mode =
-  'ai-easy';
+  'ai-master';
+
+let playerColor =
+  'white';
+
+let activePlayerColor =
+  'white';
 
 let aiThinking =
   false;
@@ -1310,12 +1316,9 @@ function updateCameraPerspective() {
     );
 
   const targetTheta =
-    (
-      isAiMode ||
-      isWhiteTurn
-    )
-      ? 0
-      : Math.PI;
+    isAiMode
+      ? (activePlayerColor === 'black' ? Math.PI : 0)
+      : (isWhiteTurn ? 0 : Math.PI);
 
   const curX =
     camera.position.x;
@@ -1428,6 +1431,11 @@ const mobileUndoBtn =
 const modeSelect =
   document.getElementById(
     'modeSelect'
+  );
+
+const colorSelect =
+  document.getElementById(
+    'colorSelect'
   );
 
 const whiteCapturesEl =
@@ -2305,11 +2313,11 @@ function render(
       if (turnPillText) {
         turnPillText.textContent = `${player} in CHECK!`;
       }
-    } else if (aiThinking && !isWhite) {
-      turnPillEl.classList.add('turn-black');
+    } else if (aiThinking) {
+      turnPillEl.classList.add(isWhite ? 'turn-white' : 'turn-black');
       if (turnPieceIcon) turnPieceIcon.textContent = '🤖';
       if (turnPillText) {
-        turnPillText.textContent = 'AI Thinking...';
+        turnPillText.textContent = `${player} AI Thinking...`;
       }
     } else {
       turnPillEl.classList.add(isWhite ? 'turn-white' : 'turn-black');
@@ -3149,16 +3157,15 @@ function render(
   // AI TRIGGER
   // ==========================================================
 
+  const currentAiColor = activePlayerColor === 'white' ? 'black' : 'white';
   if (
     pieceModelsReady &&
     !animating &&
     !game.gameOver &&
     mode.startsWith('ai') &&
-    game.currentPlayer ===
-      'black' &&
+    game.currentPlayer === currentAiColor &&
     !aiThinking
   ) {
-
     triggerAI();
   }
 
@@ -3179,7 +3186,13 @@ function animate2DMove(move, callback) {
     callback();
     return;
   }
-  const fromSqIndex = move.fromRow * 8 + move.fromCol;
+  const isFlipped = activePlayerColor === 'black' && mode.startsWith('ai');
+  const screenFromR = isFlipped ? 7 - move.fromRow : move.fromRow;
+  const screenFromC = isFlipped ? 7 - move.fromCol : move.fromCol;
+  const screenToR = isFlipped ? 7 - move.toRow : move.toRow;
+  const screenToC = isFlipped ? 7 - move.toCol : move.toCol;
+
+  const fromSqIndex = screenFromR * 8 + screenFromC;
   const sqs = boardEl.querySelectorAll('.sq2d');
   const fromSq = sqs[fromSqIndex];
   if (!fromSq) {
@@ -3194,8 +3207,8 @@ function animate2DMove(move, callback) {
 
   const sqWidth = fromSq.clientWidth || 50;
   const sqHeight = fromSq.clientHeight || 50;
-  const deltaX = (move.toCol - move.fromCol) * sqWidth;
-  const deltaY = (move.toRow - move.fromRow) * sqHeight;
+  const deltaX = (screenToC - screenFromC) * sqWidth;
+  const deltaY = (screenToR - screenFromR) * sqHeight;
 
   animating = true;
   pieceEl.style.transition = 'transform 450ms cubic-bezier(0.25, 1, 0.5, 1)';
@@ -3208,127 +3221,123 @@ function animate2DMove(move, callback) {
 }
 
 function triggerAI() {
-
   if (
     aiThinking ||
     animating ||
     game.gameOver ||
-    !pieceModelsReady
+    !pieceModelsReady ||
+    !mode.startsWith('ai')
   ) {
-
     return;
   }
 
-  aiThinking =
-    true;
+  const aiColor = activePlayerColor === 'white' ? 'black' : 'white';
+  if (game.currentPlayer !== aiColor) {
+    return;
+  }
 
-  statusText.textContent =
-    'AI is thinking...';
-
+  aiThinking = true;
+  statusText.textContent = `${aiColor === 'white' ? 'White AI' : 'Black AI'} is thinking...`;
   render();
 
-  const delay =
-    mode === 'ai-hard'
-      ? 600
-      : 450;
+  const delay = mode === 'ai-hard' ? 550 : 400;
 
-  setTimeout(
-    () => {
-
-      if (
-        game.gameOver ||
-        game.currentPlayer !==
-          'black'
-      ) {
-
-        aiThinking =
-          false;
-
-        render();
-
-        return;
-      }
-
-      const move = ai.getBestMove(game, 'black');
-
-      if (!move) {
-        aiThinking = false;
-        render();
-        return;
-      }
-
-      // Highlight the intended move origin & destination squares first
-      game.lastMove = move;
+  setTimeout(() => {
+    if (game.gameOver || game.currentPlayer !== aiColor) {
+      aiThinking = false;
       render();
-
-      // Pause 300ms so player clearly sees the pre-move highlight
-      setTimeout(() => {
-        if (is2DView) {
-          animate2DMove(move, () => {
-            game.makeMove(move);
-            aiThinking = false;
-            render(move);
-          });
-        } else {
-          const fromGroup = squares[move.fromRow][move.fromCol].group;
-
-          if (!fromGroup) {
-            game.makeMove(move);
-            aiThinking = false;
-            render(move);
-            return;
-          }
-
-          animateMove(move, () => {
-            game.makeMove(move);
-            aiThinking = false;
-            render(move);
-          });
-        }
-      }, 300);
-
-    },
-    delay
-  );
-}
-
-// ============================================================
-// NEW GAME
-// ============================================================
-
-newGameBtn.addEventListener(
-  'click',
-  () => {
-
-    if (
-      animating
-    ) {
-
       return;
     }
 
-    game.reset();
+    const move = ai.getBestMove(game, aiColor);
+    if (!move) {
+      aiThinking = false;
+      render();
+      return;
+    }
 
-    aiThinking =
-      false;
-
-    lastShownGameResult = null;
-    hideGameResultModal();
-
+    // Highlight the intended move origin & destination squares first
+    game.lastMove = move;
     render();
+
+    // Pause 280ms so player clearly sees the pre-move highlight
+    setTimeout(() => {
+      if (is2DView) {
+        animate2DMove(move, () => {
+          game.makeMove(move);
+          aiThinking = false;
+          render(move);
+        });
+      } else {
+        const fromGroup = squares[move.fromRow][move.fromCol].group;
+
+        if (!fromGroup) {
+          game.makeMove(move);
+          aiThinking = false;
+          render(move);
+          return;
+        }
+
+        animateMove(move, () => {
+          game.makeMove(move);
+          aiThinking = false;
+          render(move);
+        });
+      }
+    }, 280);
+  }, delay);
+}
+
+// ============================================================
+// NEW GAME & COLOR RESOLUTION
+// ============================================================
+
+function resolvePlayerColor() {
+  if (playerColor === 'random') {
+    return Math.random() < 0.5 ? 'white' : 'black';
   }
-);
+  return playerColor;
+}
+
+function startNewGame() {
+  if (animating) return;
+  activePlayerColor = resolvePlayerColor();
+  game.reset();
+  aiThinking = false;
+  lastShownGameResult = null;
+  hideGameResultModal();
+  render();
+
+  // If in vs AI mode and player is Black, White AI moves first!
+  if (mode.startsWith('ai') && activePlayerColor === 'black') {
+    setTimeout(() => {
+      triggerAI();
+    }, 450);
+  }
+}
+
+newGameBtn.addEventListener('click', startNewGame);
 
 function handleUndo() {
   if (animating || aiThinking) return;
 
   if (mode !== 'pvp') {
-    // In vs Computer mode, undo 2 plies if both player and AI have moved
-    if (game.history.length >= 2) {
-      game.undo();
-      game.undo();
-    } else if (game.history.length === 1) {
-      game.undo();
+    if (activePlayerColor === 'white') {
+      // In vs Computer mode (Player White): undo 2 plies if both moved
+      if (game.history.length >= 2) {
+        game.undo();
+        game.undo();
+      } else if (game.history.length === 1) {
+        game.undo();
+      }
+    } else {
+      // In vs Computer mode (Player Black): White AI moved 1st
+      if (game.history.length >= 3) {
+        game.undo();
+        game.undo();
+      } else if (game.history.length === 2) {
+        game.undo();
+      }
     }
   } else {
     // In 2-Player (PvP) mode, undo 1 ply
@@ -3404,59 +3413,44 @@ offerDrawBtn?.addEventListener(
 );
 
 // ============================================================
-// MODE SELECT
+// MODE & COLOR SELECT
 // ============================================================
 
 modeSelect.addEventListener(
   'change',
   (e) => {
-
-    mode =
-      e.target.value;
-
-    ai.setDifficulty(
-      mode === 'ai-hard'
-        ? 'hard'
-        : 'easy'
-    );
-
-    game.reset();
-
-    aiThinking =
-      false;
-
-    lastShownGameResult = null;
-    hideGameResultModal();
-
-    render();
+    mode = e.target.value;
+    if (mode.startsWith('ai-')) {
+      ai.setDifficulty(mode.replace('ai-', ''));
+    }
+    if (colorSelect) {
+      colorSelect.style.display = mode === 'pvp' ? 'none' : 'inline-block';
+    }
+    startNewGame();
   }
 );
+
+if (colorSelect) {
+  colorSelect.addEventListener(
+    'change',
+    (e) => {
+      playerColor = e.target.value;
+      startNewGame();
+    }
+  );
+}
 
 resultCloseBtn?.addEventListener('click', () => {
   hideGameResultModal();
 });
 
-resultNewGameBtn?.addEventListener('click', () => {
-  if (animating) return;
-  game.reset();
-  aiThinking = false;
-  lastShownGameResult = null;
-  hideGameResultModal();
-  render();
-});
+resultNewGameBtn?.addEventListener('click', startNewGame);
 
 // ============================================================
 // MOBILE BOTTOM BAR BUTTONS
 // ============================================================
 
-mobileNewGameBtn?.addEventListener('click', () => {
-  if (animating) return;
-  game.reset();
-  aiThinking = false;
-  lastShownGameResult = null;
-  hideGameResultModal();
-  render();
-});
+mobileNewGameBtn?.addEventListener('click', startNewGame);
 
 mobileUndoBtn?.addEventListener('click', handleUndo);
 
@@ -3509,25 +3503,43 @@ function render2DBoard() {
   const bottomLead = document.getElementById('bottomLead');
 
   const isWhiteTurn = game.currentPlayer === 'white';
+  const isPlayerBlack = activePlayerColor === 'black' && mode.startsWith('ai');
 
+  // Strip turn highlights
   if (stripTop) {
-    stripTop.classList.toggle('active-turn', !isWhiteTurn && !game.gameOver);
+    stripTop.classList.toggle('active-turn', (isPlayerBlack ? isWhiteTurn : !isWhiteTurn) && !game.gameOver);
   }
   if (stripBottom) {
-    stripBottom.classList.toggle('active-turn', isWhiteTurn && !game.gameOver);
+    stripBottom.classList.toggle('active-turn', (isPlayerBlack ? !isWhiteTurn : isWhiteTurn) && !game.gameOver);
   }
 
+  // Top Avatar & Name
   if (topAvatar) {
-    topAvatar.textContent = mode.startsWith('ai') ? '🤖' : '♚';
+    topAvatar.textContent = mode.startsWith('ai') ? '🤖' : (isPlayerBlack ? '♔' : '♚');
   }
   if (topName) {
-    topName.textContent = mode === 'ai-easy' ? 'Easy AI' : mode === 'ai-hard' ? 'Hard AI' : 'Black';
+    if (mode.startsWith('ai')) {
+      const aiLabels = {
+        'ai-easy': 'Easy AI',
+        'ai-medium': 'Medium AI',
+        'ai-hard': 'Hard AI',
+        'ai-master': 'Master AI 👑'
+      };
+      const label = aiLabels[mode] || 'AI';
+      topName.textContent = isPlayerBlack ? `${label} (White)` : `${label} (Black)`;
+    } else {
+      topName.textContent = isPlayerBlack ? 'White' : 'Black';
+    }
   }
+
+  // Bottom Avatar & Name
   if (bottomAvatar) {
-    bottomAvatar.textContent = '♔';
+    bottomAvatar.textContent = isPlayerBlack ? '♚' : '♔';
   }
   if (bottomName) {
-    bottomName.textContent = mode.startsWith('ai') ? 'White (You)' : 'White';
+    bottomName.textContent = mode.startsWith('ai')
+      ? (isPlayerBlack ? 'You (Black)' : 'You (White)')
+      : (isPlayerBlack ? 'Black' : 'White');
   }
 
   // Calculate material and captured pieces like Chess.com
@@ -3568,16 +3580,21 @@ function render2DBoard() {
   };
 
   if (bottomCaptures) {
-    bottomCaptures.innerHTML = formatCaptures(capturedByWhite, true);
+    bottomCaptures.innerHTML = isPlayerBlack
+      ? formatCaptures(capturedByBlack, false)
+      : formatCaptures(capturedByWhite, true);
   }
 
   if (topCaptures) {
-    topCaptures.innerHTML = formatCaptures(capturedByBlack, false);
+    topCaptures.innerHTML = isPlayerBlack
+      ? formatCaptures(capturedByWhite, true)
+      : formatCaptures(capturedByBlack, false);
   }
 
   if (bottomLead) {
-    if (lead > 0) {
-      bottomLead.textContent = `+${lead}`;
+    const showLead = isPlayerBlack ? lead < 0 : lead > 0;
+    if (showLead) {
+      bottomLead.textContent = `+${Math.abs(lead)}`;
       bottomLead.style.display = 'inline-block';
     } else {
       bottomLead.style.display = 'none';
@@ -3585,7 +3602,8 @@ function render2DBoard() {
   }
 
   if (topLead) {
-    if (lead < 0) {
+    const showLead = isPlayerBlack ? lead > 0 : lead < 0;
+    if (showLead) {
       topLead.textContent = `+${Math.abs(lead)}`;
       topLead.style.display = 'inline-block';
     } else {
@@ -3659,8 +3677,10 @@ function render2DBoard() {
     }
   }
 
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
+  for (let screenR = 0; screenR < 8; screenR++) {
+    for (let screenC = 0; screenC < 8; screenC++) {
+      const r = isPlayerBlack ? 7 - screenR : screenR;
+      const c = isPlayerBlack ? 7 - screenC : screenC;
       const sq = document.createElement('div');
       const isLight = (r + c) % 2 === 0;
       const key = `${r},${c}`;
@@ -3676,16 +3696,16 @@ function render2DBoard() {
       }
 
       // Add Chess.com style coordinates inside edge squares
-      if (c === 0) {
+      if (screenC === 0) {
         const rankCoord = document.createElement('span');
         rankCoord.className = 'sq-coord-rank';
-        rankCoord.textContent = 8 - r;
+        rankCoord.textContent = isPlayerBlack ? screenR + 1 : 8 - screenR;
         sq.appendChild(rankCoord);
       }
-      if (r === 7) {
+      if (screenR === 7) {
         const fileCoord = document.createElement('span');
         fileCoord.className = 'sq-coord-file';
-        fileCoord.textContent = 'abcdefgh'[c];
+        fileCoord.textContent = isPlayerBlack ? 'hgfedcba'[screenC] : 'abcdefgh'[screenC];
         sq.appendChild(fileCoord);
       }
 
@@ -3736,6 +3756,8 @@ function render2DBoard() {
 
       sq.addEventListener('click', () => {
         if (animating || aiThinking) return;
+        if (mode.startsWith('ai') && game.currentPlayer !== activePlayerColor) return;
+
         const res = game.selectSquare(r, c);
         if (res.type === 'PIECE_SELECTED') {
           audio.playSelect();
@@ -3920,8 +3942,7 @@ renderer.domElement.addEventListener(
 
     if (
       mode.startsWith('ai') &&
-      game.currentPlayer ===
-        'black'
+      game.currentPlayer !== activePlayerColor
     ) {
 
       return;

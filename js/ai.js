@@ -348,6 +348,24 @@ export class ChessAI {
       [20, 20,  0,  0,  0,  0, 20, 20],
       [20, 30, 10,  0,  0, 10, 30, 20],
     ];
+
+    this.kingEndgameSquareTable = [
+      [-50,-40,-30,-20,-20,-30,-40,-50],
+      [-30,-20,-10,  0,  0,-10,-20,-30],
+      [-30,-10, 20, 30, 30, 20,-10,-30],
+      [-30,-10, 30, 40, 40, 30,-10,-30],
+      [-30,-10, 30, 40, 40, 30,-10,-30],
+      [-30,-10, 20, 30, 30, 20,-10,-30],
+      [-30,-30,  0,  0,  0,  0,-30,-30],
+      [-50,-30,-30,-30,-30,-30,-30,-50],
+    ];
+
+    // Transposition Table and Search caches
+    this.tt = new Map();
+    this.killerMoves = [];
+    this.historyTable = Array.from({ length: 8 }, () =>
+      Array.from({ length: 8 }, () => Array.from({ length: 8 }, () => Array(8).fill(0)))
+    );
   }
 
   setDifficulty(level) {
@@ -356,6 +374,7 @@ export class ChessAI {
 
   // Convert coordinate numbers to chess notation string e.g. e2e4
   moveToString(move) {
+    if (!move) return '';
     return `${FILES[move.fromCol]}${8 - move.fromRow}${FILES[move.toCol]}${8 - move.toRow}`;
   }
 
@@ -363,7 +382,6 @@ export class ChessAI {
   getBookMove(game, player = 'black') {
     if (!game.moveHistory) return null;
 
-    // Build the history string key
     const historyKey = game.moveHistory
       .map((m) => `${m.from}${m.to}`)
       .join(' ');
@@ -371,7 +389,6 @@ export class ChessAI {
     const bookEntries = OPENING_BOOK[historyKey];
     if (!bookEntries || bookEntries.length === 0) return null;
 
-    // Pick a weighted move from the book
     const totalWeight = bookEntries.reduce((acc, entry) => acc + entry.weight, 0);
     let rand = Math.random() * totalWeight;
     let chosenStr = bookEntries[0].move;
@@ -384,149 +401,230 @@ export class ChessAI {
       rand -= entry.weight;
     }
 
-    // Match the chosen string to a legal game move
     const legalMoves = game.getAllLegalMoves(player);
     const matchedMove = legalMoves.find((m) => this.moveToString(m) === chosenStr);
     return matchedMove || null;
+  }
+
+  getBoardHash(board, player) {
+    let hash = player === 'white' ? 'w:' : 'b:';
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = board[r][c];
+        if (p) hash += `${r}${c}${p},`;
+      }
+    }
+    return hash;
   }
 
   getBestMove(game, player = 'black') {
     const moves = game.getAllLegalMoves(player);
     if (!moves.length) return null;
 
-    // 1. Try to find a move from our varied opening book first
+    // 1. Try opening book first
     const bookMove = this.getBookMove(game, player);
     if (bookMove) {
       return bookMove;
     }
 
-    // 2. Search depth based on difficulty
-    const depth = this.difficulty === 'hard' ? 3 : 2;
+    // 2. Clear / refresh search structures
+    this.killerMoves = Array.from({ length: 20 }, () => []);
+    if (this.tt.size > 20000) {
+      this.tt.clear();
+    }
+
+    // Determine target search depth
+    let maxDepth = 4;
+    if (this.difficulty === 'easy') maxDepth = 2;
+    else if (this.difficulty === 'medium') maxDepth = 3;
+    else if (this.difficulty === 'hard') maxDepth = 4;
+    else if (this.difficulty === 'master') maxDepth = 5;
+
     const rootBoard = game.board.map((row) => [...row]);
-    let alpha = -Infinity;
-    const beta = Infinity;
+    let bestMove = moves[0];
+    let bestScore = -Infinity;
 
-    const orderedMoves = this.orderMoves(moves, rootBoard, player);
-    const scoredMoves = [];
+    // Iterative Deepening: start from depth 1 up to maxDepth
+    for (let currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
+      let alpha = -Infinity;
+      const beta = Infinity;
+      const orderedMoves = this.orderMoves(moves, rootBoard, player, 0, bestMove);
+      let currentBestMove = null;
+      let currentBestScore = -Infinity;
 
-    for (const move of orderedMoves) {
-      const nextBoard = this.applyMoveToBoard(rootBoard, move);
-      const score = this.minimax(
-        nextBoard,
-        player === 'white' ? 'black' : 'white',
-        depth - 1,
-        alpha,
-        beta,
-        player,
-        game
-      );
+      for (const move of orderedMoves) {
+        const nextBoard = this.applyMoveToBoard(rootBoard, move);
+        const score = this.minimax(
+          nextBoard,
+          player === 'white' ? 'black' : 'white',
+          currentDepth - 1,
+          alpha,
+          beta,
+          player,
+          game,
+          1
+        );
 
-      scoredMoves.push({ move, score });
+        if (score > currentBestScore) {
+          currentBestScore = score;
+          currentBestMove = move;
+        }
 
-      if (score > alpha) {
-        alpha = score;
+        if (score > alpha) {
+          alpha = score;
+        }
+      }
+
+      if (currentBestMove) {
+        bestMove = currentBestMove;
+        bestScore = currentBestScore;
+      }
+
+      // If checkmate found, break immediately
+      if (bestScore >= 18000) break;
+    }
+
+    // Easy mode: slight temperature/variety among close moves
+    if (this.difficulty === 'easy') {
+      const topCandidates = moves.filter((m) => {
+        const nextB = this.applyMoveToBoard(rootBoard, m);
+        const sc = this.evaluateBoard(nextB, player);
+        return sc >= bestScore - 60;
+      });
+      if (topCandidates.length > 1) {
+        return topCandidates[Math.floor(Math.random() * topCandidates.length)];
       }
     }
 
-    if (!scoredMoves.length) return moves[0];
-
-    // Sort scored moves descending
-    scoredMoves.sort((a, b) => b.score - a.score);
-    const bestScore = scoredMoves[0].score;
-
-    // 3. Selection with temperature/variety among top moves within a narrow score band
-    // This eliminates rigid determinism while avoiding blunders
-    const scoreTolerance = this.difficulty === 'hard' ? 20 : 45;
-    const topCandidates = scoredMoves.filter((sm) => sm.score >= bestScore - scoreTolerance);
-
-    if (topCandidates.length === 1) {
-      return topCandidates[0].move;
-    }
-
-    // Weighted random selection among top candidate moves
-    const temperature = this.difficulty === 'hard' ? 12 : 25;
-    const weights = topCandidates.map((c) => Math.exp((c.score - bestScore) / temperature));
-    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-
-    let rand = Math.random() * totalWeight;
-    for (let i = 0; i < topCandidates.length; i++) {
-      if (rand < weights[i]) {
-        return topCandidates[i].move;
-      }
-      rand -= weights[i];
-    }
-
-    return topCandidates[0].move;
+    return bestMove;
   }
 
-  minimax(board, currentPlayer, depth, alpha, beta, maximizingPlayer, game) {
+  minimax(board, currentPlayer, depth, alpha, beta, maximizingPlayer, game, ply) {
+    const isMaximizing = currentPlayer === maximizingPlayer;
+    const boardHash = this.getBoardHash(board, currentPlayer);
+    const ttEntry = this.tt.get(boardHash);
+
+    if (ttEntry && ttEntry.depth >= depth) {
+      if (ttEntry.flag === 0) return ttEntry.score; // EXACT
+      if (ttEntry.flag === 1 && ttEntry.score > alpha) alpha = ttEntry.score; // LOWERBOUND
+      else if (ttEntry.flag === 2 && ttEntry.score < beta) beta = ttEntry.score; // UPPERBOUND
+      if (alpha >= beta) return ttEntry.score;
+    }
+
     const legalMoves = this.getLegalMovesForBoard(board, currentPlayer, game);
 
-    // If terminal or depth reached:
-    if (depth === 0 || !legalMoves.length) {
+    // Terminal or depth reached
+    if (depth <= 0 || !legalMoves.length) {
       if (!legalMoves.length) {
-        // Check if in check -> Checkmate!
         if (this.isPlayerInCheckOnBoard(board, currentPlayer, game)) {
-          return currentPlayer === maximizingPlayer ? -19000 : 19000;
+          return isMaximizing ? -20000 + ply : 20000 - ply;
         }
         return 0; // Stalemate
       }
-      // Run tactical quiescence search on captures to avoid horizon effect
-      return this.quiescence(board, alpha, beta, maximizingPlayer, currentPlayer, game, 2);
+      const qDepth = this.difficulty === 'easy' ? 1 : (this.difficulty === 'master' ? 5 : 4);
+      return this.quiescence(board, alpha, beta, maximizingPlayer, currentPlayer, game, qDepth, ply);
     }
 
-    if (currentPlayer === maximizingPlayer) {
+    // Check extension: if currently in check, extend search depth by 1
+    const inCheck = this.isPlayerInCheckOnBoard(board, currentPlayer, game);
+    const effectiveDepth = inCheck && depth < 6 ? depth + 1 : depth;
+
+    const ttMove = ttEntry ? ttEntry.bestMove : null;
+    const orderedMoves = this.orderMoves(legalMoves, board, currentPlayer, ply, ttMove);
+    let bestMove = null;
+
+    if (isMaximizing) {
       let maxScore = -Infinity;
-      for (const move of this.orderMoves(legalMoves, board, currentPlayer)) {
+      for (const move of orderedMoves) {
         const nextBoard = this.applyMoveToBoard(board, move);
         const score = this.minimax(
           nextBoard,
           currentPlayer === 'white' ? 'black' : 'white',
-          depth - 1,
+          effectiveDepth - 1,
           alpha,
           beta,
           maximizingPlayer,
-          game
+          game,
+          ply + 1
         );
-        maxScore = Math.max(maxScore, score);
-        alpha = Math.max(alpha, score);
-        if (beta <= alpha) break;
-      }
-      return maxScore;
-    }
 
-    let minScore = Infinity;
-    for (const move of this.orderMoves(legalMoves, board, currentPlayer)) {
-      const nextBoard = this.applyMoveToBoard(board, move);
-      const score = this.minimax(
-        nextBoard,
-        currentPlayer === 'white' ? 'black' : 'white',
-        depth - 1,
-        alpha,
-        beta,
-        maximizingPlayer,
-        game
-      );
-      minScore = Math.min(minScore, score);
-      beta = Math.min(beta, score);
-      if (beta <= alpha) break;
+        if (score > maxScore) {
+          maxScore = score;
+          bestMove = move;
+        }
+
+        if (score > alpha) {
+          alpha = score;
+        }
+
+        if (beta <= alpha) {
+          // Beta Cutoff -> Record Killer Move and History
+          if (!move.capture && ply < 20) {
+            this.recordKillerMove(ply, move);
+            this.historyTable[move.fromRow][move.fromCol][move.toRow][move.toCol] += depth * depth;
+          }
+          break;
+        }
+      }
+
+      // Store in Transposition Table
+      const flag = maxScore <= alpha ? 2 : (maxScore >= beta ? 1 : 0);
+      this.tt.set(boardHash, { depth, score: maxScore, flag, bestMove });
+      return maxScore;
+    } else {
+      let minScore = Infinity;
+      for (const move of orderedMoves) {
+        const nextBoard = this.applyMoveToBoard(board, move);
+        const score = this.minimax(
+          nextBoard,
+          currentPlayer === 'white' ? 'black' : 'white',
+          effectiveDepth - 1,
+          alpha,
+          beta,
+          maximizingPlayer,
+          game,
+          ply + 1
+        );
+
+        if (score < minScore) {
+          minScore = score;
+          bestMove = move;
+        }
+
+        if (score < beta) {
+          beta = score;
+        }
+
+        if (beta <= alpha) {
+          if (!move.capture && ply < 20) {
+            this.recordKillerMove(ply, move);
+            this.historyTable[move.fromRow][move.fromCol][move.toRow][move.toCol] += depth * depth;
+          }
+          break;
+        }
+      }
+
+      const flag = minScore <= alpha ? 2 : (minScore >= beta ? 1 : 0);
+      this.tt.set(boardHash, { depth, score: minScore, flag, bestMove });
+      return minScore;
     }
-    return minScore;
   }
 
-  // Quiescence search on captures to prevent blunders on horizon
-  quiescence(board, alpha, beta, maximizingPlayer, currentPlayer, game, qDepth) {
+  // Quiescence search on tactical captures to eliminate blunders
+  quiescence(board, alpha, beta, maximizingPlayer, currentPlayer, game, qDepth, ply) {
     const standPat = this.evaluateBoard(board, maximizingPlayer);
-    if (qDepth === 0) return standPat;
+    if (qDepth <= 0) return standPat;
 
-    if (currentPlayer === maximizingPlayer) {
+    const isMaximizing = currentPlayer === maximizingPlayer;
+
+    if (isMaximizing) {
       if (standPat >= beta) return beta;
       if (standPat > alpha) alpha = standPat;
 
       const legalMoves = this.getLegalMovesForBoard(board, currentPlayer, game);
-      const captureMoves = legalMoves.filter((m) => m.capture);
+      const captureMoves = legalMoves.filter((m) => m.capture || m.promotedPiece);
 
-      for (const move of this.orderMoves(captureMoves, board, currentPlayer)) {
+      for (const move of this.orderMoves(captureMoves, board, currentPlayer, ply)) {
         const nextBoard = this.applyMoveToBoard(board, move);
         const score = this.quiescence(
           nextBoard,
@@ -535,35 +633,46 @@ export class ChessAI {
           maximizingPlayer,
           currentPlayer === 'white' ? 'black' : 'white',
           game,
-          qDepth - 1
+          qDepth - 1,
+          ply + 1
         );
         if (score >= beta) return beta;
         if (score > alpha) alpha = score;
       }
       return alpha;
+    } else {
+      if (standPat <= alpha) return alpha;
+      if (standPat < beta) beta = standPat;
+
+      const legalMoves = this.getLegalMovesForBoard(board, currentPlayer, game);
+      const captureMoves = legalMoves.filter((m) => m.capture || m.promotedPiece);
+
+      for (const move of this.orderMoves(captureMoves, board, currentPlayer, ply)) {
+        const nextBoard = this.applyMoveToBoard(board, move);
+        const score = this.quiescence(
+          nextBoard,
+          alpha,
+          beta,
+          maximizingPlayer,
+          currentPlayer === 'white' ? 'black' : 'white',
+          game,
+          qDepth - 1,
+          ply + 1
+        );
+        if (score <= alpha) return alpha;
+        if (score < beta) beta = score;
+      }
+      return beta;
     }
+  }
 
-    if (standPat <= alpha) return alpha;
-    if (standPat < beta) beta = standPat;
-
-    const legalMoves = this.getLegalMovesForBoard(board, currentPlayer, game);
-    const captureMoves = legalMoves.filter((m) => m.capture);
-
-    for (const move of this.orderMoves(captureMoves, board, currentPlayer)) {
-      const nextBoard = this.applyMoveToBoard(board, move);
-      const score = this.quiescence(
-        nextBoard,
-        alpha,
-        beta,
-        maximizingPlayer,
-        currentPlayer === 'white' ? 'black' : 'white',
-        game,
-        qDepth - 1
-      );
-      if (score <= alpha) return alpha;
-      if (score < beta) beta = score;
+  recordKillerMove(ply, move) {
+    if (!this.killerMoves[ply]) this.killerMoves[ply] = [];
+    const km = this.killerMoves[ply];
+    if (!km.some((m) => m.fromRow === move.fromRow && m.fromCol === move.fromCol && m.toRow === move.toRow && m.toCol === move.toCol)) {
+      km.unshift(move);
+      if (km.length > 2) km.pop();
     }
-    return beta;
   }
 
   isPlayerInCheckOnBoard(board, player, game) {
@@ -592,49 +701,63 @@ export class ChessAI {
     return moves;
   }
 
-  orderMoves(moves, board, player) {
+  orderMoves(moves, board, player, ply = 0, ttMove = null) {
     return [...moves].sort((a, b) => {
-      const aScore = this.scoreMove(board, a, player);
-      const bScore = this.scoreMove(board, b, player);
+      const aScore = this.scoreMove(board, a, player, ply, ttMove);
+      const bScore = this.scoreMove(board, b, player, ply, ttMove);
       return bScore - aScore;
     });
   }
 
-  scoreMove(board, move, player) {
+  scoreMove(board, move, player, ply = 0, ttMove = null) {
+    // 1. Transposition table principal variation move
+    if (ttMove && move.fromRow === ttMove.fromRow && move.fromCol === ttMove.fromCol && move.toRow === ttMove.toRow && move.toCol === ttMove.toCol) {
+      return 2000000;
+    }
+
     let score = 0;
     const movingPiece = board[move.fromRow][move.fromCol];
     const targetPiece = board[move.toRow][move.toCol];
 
-    // MVV-LVA: Most Valuable Victim - Least Valuable Attacker for captures
+    // 2. MVV-LVA Captures
     if (move.capture) {
       const victimValue = this.getPieceValue(targetPiece || (player === 'white' ? PIECES.BP : PIECES.WP));
       const attackerValue = this.getPieceValue(movingPiece);
-      score += 10000 + (victimValue * 10) - (attackerValue / 10);
+      score += 100000 + (victimValue * 10) - (attackerValue / 10);
     }
 
-    // Castling bonus
-    if (move.castling) {
-      score += 60;
+    // 3. Killer Moves
+    if (this.killerMoves[ply]) {
+      const km = this.killerMoves[ply];
+      if (km[0] && move.fromRow === km[0].fromRow && move.fromCol === km[0].fromCol && move.toRow === km[0].toRow && move.toCol === km[0].toCol) {
+        score += 50000;
+      } else if (km[1] && move.fromRow === km[1].fromRow && move.fromCol === km[1].fromCol && move.toRow === km[1].toRow && move.toCol === km[1].toCol) {
+        score += 40000;
+      }
     }
 
-    // Promotion bonus
+    // 4. Castling & Promotion
+    if (move.castling) score += 35000;
     if ((movingPiece === PIECES.WP && move.toRow === 0) || (movingPiece === PIECES.BP && move.toRow === 7)) {
-      score += 900;
+      score += 60000;
     }
 
-    // Center bias
+    // 5. History table score
+    score += this.historyTable[move.fromRow][move.fromCol][move.toRow][move.toCol] || 0;
+
+    // 6. Central control
     const centerBias = [
       [0,  0,  0,  0,  0,  0,  0,  0],
-      [0,  1,  1,  1,  1,  1,  1,  0],
-      [0,  1,  3,  4,  4,  3,  1,  0],
-      [0,  1,  4,  6,  6,  4,  1,  0],
-      [0,  1,  4,  6,  6,  4,  1,  0],
-      [0,  1,  3,  4,  4,  3,  1,  0],
-      [0,  1,  1,  1,  1,  1,  1,  0],
+      [0,  2,  3,  3,  3,  3,  2,  0],
+      [0,  3,  8, 12, 12,  8,  3,  0],
+      [0,  3, 12, 18, 18, 12,  3,  0],
+      [0,  3, 12, 18, 18, 12,  3,  0],
+      [0,  3,  8, 12, 12,  8,  3,  0],
+      [0,  2,  3,  3,  3,  3,  2,  0],
       [0,  0,  0,  0,  0,  0,  0,  0],
     ];
+    score += centerBias[move.toRow][move.toCol];
 
-    score += centerBias[move.toRow][move.toCol] * 2;
     return score;
   }
 
@@ -644,13 +767,11 @@ export class ChessAI {
     nextBoard[move.fromRow][move.fromCol] = PIECES.EMPTY;
     nextBoard[move.toRow][move.toCol] = piece;
 
-    // Handle en passant capture
     if (move.enPassant) {
       const captureRow = (piece === PIECES.WP) ? move.toRow + 1 : move.toRow - 1;
       nextBoard[captureRow][move.toCol] = PIECES.EMPTY;
     }
 
-    // Handle castling rook movement
     if (move.castling) {
       const rank = move.toRow;
       if (move.castling === 'king-side') {
@@ -662,7 +783,6 @@ export class ChessAI {
       }
     }
 
-    // Handle pawn promotion (default to queen)
     if ((piece === PIECES.WP && move.toRow === 0) || (piece === PIECES.BP && move.toRow === 7)) {
       nextBoard[move.toRow][move.toCol] = (piece === PIECES.WP) ? PIECES.WQ : PIECES.BQ;
     }
@@ -670,20 +790,70 @@ export class ChessAI {
     return nextBoard;
   }
 
+  // Comprehensive chess positional evaluation function
   evaluateBoard(board, player) {
     let score = 0;
+    let whiteBishops = 0;
+    let blackBishops = 0;
+    let totalPieces = 0;
+
+    const whitePawnsPerCol = [0,0,0,0,0,0,0,0];
+    const blackPawnsPerCol = [0,0,0,0,0,0,0,0];
 
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = board[row][col];
         if (!piece || piece === PIECES.EMPTY) continue;
 
+        totalPieces++;
+        const isW = this.isWhite(piece);
         const value = this.getPieceValue(piece);
-        const table = this.getSquareTable(piece, row, col);
-        const pieceScore = value + (table * 0.4);
+        const pst = this.getSquareTable(piece, row, col);
+        let pieceScore = value + pst;
 
-        score += this.isWhite(piece) ? pieceScore : -pieceScore;
+        // Count pawns per file for structure analysis
+        if (piece === PIECES.WP) whitePawnsPerCol[col]++;
+        else if (piece === PIECES.BP) blackPawnsPerCol[col]++;
+
+        // Bishop count
+        if (piece === PIECES.WB) whiteBishops++;
+        else if (piece === PIECES.BB) blackBishops++;
+
+        // Rook on open or semi-open file
+        if (piece === PIECES.WR) {
+          if (whitePawnsPerCol[col] === 0) {
+            pieceScore += (blackPawnsPerCol[col] === 0) ? 35 : 20; // Open or semi-open
+          }
+          if (row === 1) pieceScore += 35; // Rook on 7th rank
+        } else if (piece === PIECES.BR) {
+          if (blackPawnsPerCol[col] === 0) {
+            pieceScore += (whitePawnsPerCol[col] === 0) ? 35 : 20;
+          }
+          if (row === 6) pieceScore += 35;
+        }
+
+        score += isW ? pieceScore : -pieceScore;
       }
+    }
+
+    // Bishop Pair bonus (+50)
+    if (whiteBishops >= 2) score += 50;
+    if (blackBishops >= 2) score -= 50;
+
+    // Pawn structure evaluation
+    for (let col = 0; col < 8; col++) {
+      // Doubled pawns
+      if (whitePawnsPerCol[col] > 1) score -= (whitePawnsPerCol[col] - 1) * 25;
+      if (blackPawnsPerCol[col] > 1) score += (blackPawnsPerCol[col] - 1) * 25;
+
+      // Isolated pawns
+      const leftW = col > 0 ? whitePawnsPerCol[col - 1] : 0;
+      const rightW = col < 7 ? whitePawnsPerCol[col + 1] : 0;
+      if (whitePawnsPerCol[col] > 0 && leftW === 0 && rightW === 0) score -= 20;
+
+      const leftB = col > 0 ? blackPawnsPerCol[col - 1] : 0;
+      const rightB = col < 7 ? blackPawnsPerCol[col + 1] : 0;
+      if (blackPawnsPerCol[col] > 0 && leftB === 0 && rightB === 0) score += 20;
     }
 
     return player === 'white' ? score : -score;
@@ -691,9 +861,8 @@ export class ChessAI {
 
   getSquareTable(piece, row, col) {
     const isWhitePiece = this.isWhite(piece);
-    // Mirroring rows for Black perspective
     const r = isWhitePiece ? row : 7 - row;
-    const c = isWhitePiece ? col : col;
+    const c = col;
 
     if (piece === PIECES.WP || piece === PIECES.BP) {
       return this.pawnSquareTable[r][c];

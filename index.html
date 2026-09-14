@@ -249,6 +249,40 @@
       font-weight: 500;
     }
 
+    .home-color-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .home-color-btn {
+      padding: 10px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: #c8c4ba;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+      -webkit-appearance: none;
+    }
+
+    .home-color-btn:active { transform: scale(0.96); }
+
+    .home-color-btn.selected {
+      background: rgba(215, 185, 111, 0.12);
+      border-color: rgba(215, 185, 111, 0.45);
+      color: #f6e05e;
+      box-shadow: 0 0 12px rgba(215, 185, 111, 0.15);
+    }
+
     .play-btn {
       width: 100%;
       padding: 16px;
@@ -1753,18 +1787,32 @@
       <div class="home-mode-card">
         <span class="home-mode-label">Select Game Mode</span>
         <div class="home-mode-options">
-          <button class="home-mode-btn selected" data-mode="ai-easy">
+          <button class="home-mode-btn" data-mode="ai-easy">
             <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-robot"/></svg></span></span>
             <span class="mode-info">
               <span>Easy AI</span>
-              <small>Perfect for beginners</small>
+              <small>Casual & beginner friendly</small>
+            </span>
+          </button>
+          <button class="home-mode-btn" data-mode="ai-medium">
+            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-chess-piece"/></svg></span></span>
+            <span class="mode-info">
+              <span>Medium AI</span>
+              <small>Balanced tactical play</small>
             </span>
           </button>
           <button class="home-mode-btn" data-mode="ai-hard">
             <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-brain"/></svg></span></span>
             <span class="mode-info">
               <span>Hard AI</span>
-              <small>Challenge yourself</small>
+              <small>Sharp & aggressive</small>
+            </span>
+          </button>
+          <button class="home-mode-btn selected" data-mode="ai-master">
+            <span class="mode-icon-wrap"><span class="icon icon-lg" style="color:#d4b262;"><svg><use href="#ico-crown"/></svg></span></span>
+            <span class="mode-info">
+              <span style="color:#e8d5a3;font-weight:700;">Master AI 👑</span>
+              <small style="color:#d4b262;">Grandmaster engine & deep search</small>
             </span>
           </button>
           <button class="home-mode-btn" data-mode="pvp">
@@ -1773,6 +1821,28 @@
               <span>Pass & Play</span>
               <small>Play with a friend</small>
             </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Play As Side Selection -->
+      <div class="home-mode-card" id="homeColorCard" style="margin-top: 4px;">
+        <span class="home-mode-label">Play As</span>
+        <div class="home-color-options">
+          <button class="home-color-btn selected" data-color="white" title="Play as White (Moves First)">
+            <span style="font-size:22px;line-height:1;">♔</span>
+            <span>White</span>
+            <small style="font-size:9.5px;color:#718096;font-weight:500;">Moves 1st</small>
+          </button>
+          <button class="home-color-btn" data-color="random" title="Random Side">
+            <span style="font-size:20px;line-height:1;">🎲</span>
+            <span>Random</span>
+            <small style="font-size:9.5px;color:#718096;font-weight:500;">50 / 50</small>
+          </button>
+          <button class="home-color-btn" data-color="black" title="Play as Black (AI Moves First)">
+            <span style="font-size:22px;line-height:1;">♚</span>
+            <span>Black</span>
+            <small style="font-size:9.5px;color:#718096;font-weight:500;">Moves 2nd</small>
           </button>
         </div>
       </div>
@@ -1815,8 +1885,15 @@
         </button>
         <select id="modeSelect" class="mode-select" title="Difficulty Mode">
           <option value="pvp">PvP</option>
-          <option value="ai-easy" selected>Easy</option>
+          <option value="ai-easy">Easy</option>
+          <option value="ai-medium">Medium</option>
           <option value="ai-hard">Hard</option>
+          <option value="ai-master" selected>Master 👑</option>
+        </select>
+        <select id="colorSelect" class="mode-select color-select" title="Play As (Side)">
+          <option value="white" selected>⚪ White (1st)</option>
+          <option value="black">⚫ Black (2nd)</option>
+          <option value="random">🎲 Random</option>
         </select>
         <button id="newGameBtn" class="btn btn-primary btn-desktop-only">
           <span class="icon icon-sm"><svg><use href="#ico-refresh"/></svg></span> New
@@ -2027,13 +2104,28 @@
        ============================================================ -->
   <script>
     // Background grid is lightweight — no floating piece animations needed for mobile
-    let selectedMode = 'ai-easy';
+    let selectedMode = 'ai-master';
+    let selectedColor = 'white';
 
     document.querySelectorAll('.home-mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.home-mode-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         selectedMode = btn.dataset.mode;
+        
+        // Hide color selector in PvP mode
+        const homeColorCard = document.getElementById('homeColorCard');
+        if (homeColorCard) {
+          homeColorCard.style.display = selectedMode === 'pvp' ? 'none' : 'flex';
+        }
+      });
+    });
+
+    document.querySelectorAll('.home-color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.home-color-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedColor = btn.dataset.color;
       });
     });
 
@@ -2045,9 +2137,11 @@
 
     document.getElementById('playBtn').addEventListener('click', () => {
       const modeSelect = document.getElementById('modeSelect');
+      const colorSelect = document.getElementById('colorSelect');
       if (modeSelect) modeSelect.value = selectedMode;
+      if (colorSelect) colorSelect.value = selectedColor;
       showScreen('gameScreen');
-      modeSelect.dispatchEvent(new Event('change'));
+      if (modeSelect) modeSelect.dispatchEvent(new Event('change'));
       setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
     });
 
