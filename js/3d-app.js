@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ChessGame, PIECES } from './game.js';
-import { ChessAI } from './ai.js';
+import { ChessAI, StockfishEngine } from './ai.js';
 import { audio } from './audio.js';
 
 // --- 3D setup ---
@@ -1231,8 +1231,11 @@ const ai =
     'master'
   );
 
+const stockfish =
+  new StockfishEngine();
+
 let mode =
-  'ai-master';
+  'ai-stockfish';
 
 let playerColor =
   'white';
@@ -3237,19 +3240,39 @@ function triggerAI() {
   }
 
   aiThinking = true;
-  statusText.textContent = `${aiColor === 'white' ? 'White AI' : 'Black AI'} is thinking...`;
+  const isStockfish = mode === 'ai-stockfish';
+  const engineLabel = isStockfish
+    ? 'Stockfish ⚡'
+    : (mode === 'ai-master'
+      ? 'Master AI 👑'
+      : (mode === 'ai-hard'
+        ? 'Hard AI'
+        : (mode === 'ai-medium' ? 'Medium AI' : 'Easy AI')));
+
+  statusText.textContent = `${engineLabel} (${aiColor === 'white' ? 'White' : 'Black'}) is thinking...`;
   render();
 
-  const delay = mode === 'ai-hard' ? 550 : 400;
+  const delay = isStockfish ? 220 : (mode === 'ai-hard' || mode === 'ai-master' ? 320 : 220);
 
-  setTimeout(() => {
+  setTimeout(async () => {
     if (game.gameOver || game.currentPlayer !== aiColor) {
       aiThinking = false;
       render();
       return;
     }
 
-    const move = ai.getBestMove(game, aiColor);
+    let move = null;
+    if (isStockfish) {
+      try {
+        const result = await stockfish.getBestMove(game, aiColor, 14);
+        move = result.move;
+      } catch (err) {
+        move = ai.getBestMove(game, aiColor);
+      }
+    } else {
+      move = ai.getBestMove(game, aiColor);
+    }
+
     if (!move) {
       aiThinking = false;
       render();
@@ -3260,7 +3283,7 @@ function triggerAI() {
     game.lastMove = move;
     render();
 
-    // Pause 280ms so player clearly sees the pre-move highlight
+    // Pause 260ms so player clearly sees the pre-move highlight
     setTimeout(() => {
       if (is2DView) {
         animate2DMove(move, () => {
@@ -3284,7 +3307,7 @@ function triggerAI() {
           render(move);
         });
       }
-    }, 280);
+    }, 260);
   }, delay);
 }
 
@@ -3420,7 +3443,7 @@ modeSelect.addEventListener(
   'change',
   (e) => {
     mode = e.target.value;
-    if (mode.startsWith('ai-')) {
+    if (mode.startsWith('ai-') && mode !== 'ai-stockfish') {
       ai.setDifficulty(mode.replace('ai-', ''));
     }
     if (colorSelect) {
@@ -3515,7 +3538,7 @@ function render2DBoard() {
 
   // Top Avatar & Name
   if (topAvatar) {
-    topAvatar.textContent = mode.startsWith('ai') ? '🤖' : (isPlayerBlack ? '♔' : '♚');
+    topAvatar.textContent = mode === 'ai-stockfish' ? '⚡' : (mode.startsWith('ai') ? '🤖' : (isPlayerBlack ? '♔' : '♚'));
   }
   if (topName) {
     if (mode.startsWith('ai')) {
@@ -3523,7 +3546,8 @@ function render2DBoard() {
         'ai-easy': 'Easy AI',
         'ai-medium': 'Medium AI',
         'ai-hard': 'Hard AI',
-        'ai-master': 'Master AI 👑'
+        'ai-master': 'Master AI 👑',
+        'ai-stockfish': 'Stockfish ⚡ (3500)'
       };
       const label = aiLabels[mode] || 'AI';
       topName.textContent = isPlayerBlack ? `${label} (White)` : `${label} (Black)`;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chess-royale-offline-v6';
+const CACHE_NAME = 'chess-royale-offline-v7';
 
 const APP_ASSETS = [
   './',

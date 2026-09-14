@@ -1,6 +1,7 @@
 {
   "name": "chess-royale-3d",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Chess Royale 3D with Three.js and GitHub-hosted GLTF chess models",
   "scripts": {

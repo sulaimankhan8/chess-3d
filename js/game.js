@@ -926,4 +926,91 @@ export class ChessGame {
   setPromotionCallback(callback) {
     this.promotionCallback = callback;
   }
+
+  // Generate standard Forsyth–Edwards Notation (FEN) for the current board state
+  getFEN() {
+    const pieceToFen = {
+      [PIECES.WP]: 'P', [PIECES.WN]: 'N', [PIECES.WB]: 'B',
+      [PIECES.WR]: 'R', [PIECES.WQ]: 'Q', [PIECES.WK]: 'K',
+      [PIECES.BP]: 'p', [PIECES.BN]: 'n', [PIECES.BB]: 'b',
+      [PIECES.BR]: 'r', [PIECES.BQ]: 'q', [PIECES.BK]: 'k',
+    };
+
+    // 1. Piece placement
+    const rows = [];
+    for (let r = 0; r < 8; r++) {
+      let rowStr = '';
+      let emptyCount = 0;
+      for (let c = 0; c < 8; c++) {
+        const piece = this.board[r][c];
+        if (piece === PIECES.EMPTY || !piece) {
+          emptyCount++;
+        } else {
+          if (emptyCount > 0) {
+            rowStr += emptyCount;
+            emptyCount = 0;
+          }
+          rowStr += pieceToFen[piece] || '';
+        }
+      }
+      if (emptyCount > 0) {
+        rowStr += emptyCount;
+      }
+      rows.push(rowStr);
+    }
+    const piecePlacement = rows.join('/');
+
+    // 2. Active color
+    const activeColor = this.currentPlayer === 'white' ? 'w' : 'b';
+
+    // 3. Castling availability
+    let castling = '';
+    if (this.castlingRights.whiteKingSide) castling += 'K';
+    if (this.castlingRights.whiteQueenSide) castling += 'Q';
+    if (this.castlingRights.blackKingSide) castling += 'k';
+    if (this.castlingRights.blackQueenSide) castling += 'q';
+    if (!castling) castling = '-';
+
+    // 4. En passant target square
+    let ep = '-';
+    if (this.enPassantTarget) {
+      ep = `${FILES[this.enPassantTarget.col]}${8 - this.enPassantTarget.row}`;
+    }
+
+    // 5. Halfmove clock
+    const halfmove = this.halfmoveClock || 0;
+
+    // 6. Fullmove number
+    const fullmove = Math.floor(this.moveHistory.length / 2) + 1;
+
+    return `${piecePlacement} ${activeColor} ${castling} ${ep} ${halfmove} ${fullmove}`;
+  }
+
+  // Parse a UCI algebraic move string (e.g., "e2e4", "e7e8q") into an executable move object
+  parseUCIMove(uciStr, player = this.currentPlayer) {
+    if (!uciStr || typeof uciStr !== 'string' || uciStr.length < 4) return null;
+    const cleanStr = uciStr.trim().toLowerCase();
+    const fromCol = FILES.indexOf(cleanStr[0]);
+    const fromRow = 8 - parseInt(cleanStr[1], 10);
+    const toCol = FILES.indexOf(cleanStr[2]);
+    const toRow = 8 - parseInt(cleanStr[3], 10);
+    const promoChar = cleanStr[4] ? cleanStr[4].toUpperCase() : null;
+
+    if (fromCol < 0 || fromCol > 7 || fromRow < 0 || fromRow > 7 ||
+        toCol < 0 || toCol > 7 || toRow < 0 || toRow > 7) {
+      return null;
+    }
+
+    const legalMoves = this.getAllLegalMoves(player);
+    let matchedMove = legalMoves.find((m) =>
+      m.fromRow === fromRow && m.fromCol === fromCol &&
+      m.toRow === toRow && m.toCol === toCol
+    );
+
+    if (matchedMove && promoChar) {
+      matchedMove = { ...matchedMove, promotedPiece: promoChar };
+    }
+
+    return matchedMove || null;
+  }
 }

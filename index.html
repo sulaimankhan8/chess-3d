@@ -220,6 +220,12 @@
       color: #e8d5a3;
     }
 
+    .home-mode-btn[data-mode="ai-stockfish"].selected {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+    }
+
     .home-mode-btn .mode-icon-wrap {
       width: 36px;
       height: 36px;
@@ -235,6 +241,12 @@
     .home-mode-btn.selected .mode-icon-wrap {
       color: #d4b262;
       background: rgba(215, 185, 111, 0.1);
+    }
+
+    .home-mode-btn[data-mode="ai-stockfish"].selected .mode-icon-wrap {
+      color: #00f0ff;
+      background: rgba(0, 240, 255, 0.15);
+      border-color: rgba(0, 240, 255, 0.5);
     }
 
     .home-mode-btn .mode-info {
@@ -1751,6 +1763,7 @@
        ============================================================ -->
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
     <symbol id="ico-crown" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v2H5v-2z"/></symbol>
+    <symbol id="ico-bolt" viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.9 17.55 11 21 11 21z"/></symbol>
     <symbol id="ico-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></symbol>
     <symbol id="ico-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
     <symbol id="ico-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
@@ -1785,13 +1798,25 @@
       <div class="home-divider"></div>
 
       <div class="home-mode-card">
-        <span class="home-mode-label">Select Game Mode</span>
-        <div class="home-mode-options">
-          <button class="home-mode-btn" data-mode="ai-easy">
-            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-robot"/></svg></span></span>
+          <button class="home-mode-btn selected" data-mode="ai-stockfish">
+            <span class="mode-icon-wrap" style="background:rgba(0,240,255,0.12);border-color:rgba(0,240,255,0.35);"><span class="icon icon-lg" style="color:#00f0ff;"><svg><use href="#ico-bolt"/></svg></span></span>
             <span class="mode-info">
-              <span>Easy AI</span>
-              <small>Casual & beginner friendly</small>
+              <span style="color:#00f0ff;font-weight:700;">Stockfish ⚡ (3500)</span>
+              <small style="color:#6ee7b7;">Local Engine • Ultra Grandmaster</small>
+            </span>
+          </button>
+          <button class="home-mode-btn" data-mode="ai-master">
+            <span class="mode-icon-wrap"><span class="icon icon-lg" style="color:#d4b262;"><svg><use href="#ico-crown"/></svg></span></span>
+            <span class="mode-info">
+              <span style="color:#e8d5a3;font-weight:700;">Master AI 👑</span>
+              <small style="color:#d4b262;">PeSTO positional engine & search</small>
+            </span>
+          </button>
+          <button class="home-mode-btn" data-mode="ai-hard">
+            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-brain"/></svg></span></span>
+            <span class="mode-info">
+              <span>Hard AI</span>
+              <small>Sharp tactical & aggressive</small>
             </span>
           </button>
           <button class="home-mode-btn" data-mode="ai-medium">
@@ -1801,18 +1826,11 @@
               <small>Balanced tactical play</small>
             </span>
           </button>
-          <button class="home-mode-btn" data-mode="ai-hard">
-            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-brain"/></svg></span></span>
+          <button class="home-mode-btn" data-mode="ai-easy">
+            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-robot"/></svg></span></span>
             <span class="mode-info">
-              <span>Hard AI</span>
-              <small>Sharp & aggressive</small>
-            </span>
-          </button>
-          <button class="home-mode-btn selected" data-mode="ai-master">
-            <span class="mode-icon-wrap"><span class="icon icon-lg" style="color:#d4b262;"><svg><use href="#ico-crown"/></svg></span></span>
-            <span class="mode-info">
-              <span style="color:#e8d5a3;font-weight:700;">Master AI 👑</span>
-              <small style="color:#d4b262;">Grandmaster engine & deep search</small>
+              <span>Easy AI</span>
+              <small>Casual & beginner friendly</small>
             </span>
           </button>
           <button class="home-mode-btn" data-mode="pvp">
@@ -1888,7 +1906,8 @@
           <option value="ai-easy">Easy</option>
           <option value="ai-medium">Medium</option>
           <option value="ai-hard">Hard</option>
-          <option value="ai-master" selected>Master 👑</option>
+          <option value="ai-master">Master 👑</option>
+          <option value="ai-stockfish" selected>Stockfish ⚡ (3500)</option>
         </select>
         <select id="colorSelect" class="mode-select color-select" title="Play As (Side)">
           <option value="white" selected>⚪ White (1st)</option>
@@ -2104,7 +2123,7 @@
        ============================================================ -->
   <script>
     // Background grid is lightweight — no floating piece animations needed for mobile
-    let selectedMode = 'ai-master';
+    let selectedMode = 'ai-stockfish';
     let selectedColor = 'white';
 
     document.querySelectorAll('.home-mode-btn').forEach(btn => {
