@@ -90,7 +90,7 @@
     .screen.active { display: flex; }
 
     /* ============================================================
-       HOME SCREEN
+       HOME SCREEN (PREMIUM PLAYSTORE EDITION)
        ============================================================ */
     #homeScreen {
       position: fixed;
@@ -99,22 +99,23 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(ellipse at 50% 20%, #141825 0%, #070a10 65%);
-      padding: 20px;
-      padding-top: max(20px, env(safe-area-inset-top));
-      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      background: radial-gradient(ellipse at 50% 15%, #181d2e 0%, #090c14 55%, #04060a 100%);
+      padding: 16px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
       text-align: center;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
     }
 
     .home-bg-grid {
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(215,185,111,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(215,185,111,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(rgba(215,185,111,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(215,185,111,0.035) 1px, transparent 1px);
+      background-size: 36px 36px;
       pointer-events: none;
       z-index: 0;
     }
@@ -125,200 +126,313 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
-      max-width: 380px;
+      gap: 10px;
+      max-width: 440px;
       width: 100%;
+      margin: auto;
     }
 
+    .home-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
 
-
-    .home-crown {
-      color: #d4b262;
-      filter: drop-shadow(0 0 20px rgba(212,178,98,0.35));
+    .home-crown-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(215,185,111,0.2) 0%, rgba(215,185,111,0.05) 100%);
+      border: 1px solid rgba(215,185,111,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffd700;
+      box-shadow: 0 0 20px rgba(215,185,111,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+      margin-bottom: 2px;
       animation: crownFloat 3s ease-in-out infinite alternate;
     }
 
     @keyframes crownFloat {
-      from { transform: translateY(0) scale(1); }
-      to { transform: translateY(-6px) scale(1.04); }
+      from { transform: translateY(0); }
+      to { transform: translateY(-4px); }
     }
 
     .home-title {
       font-family: 'Outfit', sans-serif;
       font-weight: 900;
-      font-size: clamp(32px, 8vw, 48px);
-      letter-spacing: 3px;
-      color: #e8d5a3;
+      font-size: clamp(24px, 5.5vw, 32px);
+      letter-spacing: 2.5px;
+      background: linear-gradient(135deg, #fff2cc 0%, #e5c068 50%, #cca038 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       line-height: 1.1;
-    }
-
-    .home-subtitle {
-      color: #6b7894;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 3px;
       text-transform: uppercase;
+      text-shadow: 0 4px 20px rgba(215,185,111,0.25);
     }
 
-    .home-divider {
-      width: 48px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #d4b262, transparent);
-      margin: 4px 0;
-    }
-
-    .home-mode-card {
-      width: 100%;
-      background: rgba(15, 19, 30, 0.8);
-      border: 1px solid rgba(215, 185, 111, 0.12);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .home-mode-label {
+    .home-badge-tag {
       font-size: 10px;
       font-weight: 700;
-      color: #6b7894;
       letter-spacing: 2px;
       text-transform: uppercase;
+      color: #94a3b8;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .home-mode-options {
+    .home-badge-tag::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .home-card {
+      width: 100%;
+      background: rgba(15, 20, 32, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .home-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 4px 4px;
+    }
+
+    .home-card-title {
+      font-size: 10px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
     }
 
     .home-mode-btn {
       width: 100%;
-      padding: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      color: #c8c4ba;
+      background: rgba(255, 255, 255, 0.02);
+      color: #cbd5e1;
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       text-align: left;
       -webkit-appearance: none;
-      min-height: 54px;
+      min-height: 46px;
+      position: relative;
     }
 
-    .home-mode-btn:active { transform: scale(0.98); }
-
-    .home-mode-btn.selected {
-      background: rgba(215, 185, 111, 0.08);
-      border-color: rgba(215, 185, 111, 0.35);
-      color: #e8d5a3;
+    .home-mode-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
     }
 
-    .home-mode-btn[data-mode="ai-stockfish"].selected {
-      background: rgba(0, 240, 255, 0.08);
-      border-color: rgba(0, 240, 255, 0.4);
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+    .home-mode-btn:active {
+      transform: scale(0.98);
     }
 
-    .home-mode-btn .mode-icon-wrap {
-      width: 36px;
-      height: 36px;
+    .home-mode-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .home-mode-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
       flex-shrink: 0;
-      color: #8a95b5;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      transition: all 0.2s ease;
     }
 
-    .home-mode-btn.selected .mode-icon-wrap {
-      color: #d4b262;
-      background: rgba(215, 185, 111, 0.1);
-    }
-
-    .home-mode-btn[data-mode="ai-stockfish"].selected .mode-icon-wrap {
-      color: #00f0ff;
-      background: rgba(0, 240, 255, 0.15);
-      border-color: rgba(0, 240, 255, 0.5);
-    }
-
-    .home-mode-btn .mode-info {
+    .home-mode-text {
       display: flex;
       flex-direction: column;
       gap: 1px;
+      min-width: 0;
     }
 
-    .home-mode-btn .mode-info small {
-      color: #4f5a72;
-      font-size: 11px;
+    .home-mode-name {
+      font-family: 'Outfit', 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 13.5px;
+      color: #e2e8f0;
+      letter-spacing: 0.3px;
+    }
+
+    .home-mode-desc {
+      font-size: 10.5px;
+      color: #64748b;
       font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .home-color-options {
+    .home-elo-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    /* Selected states by difficulty */
+    .home-mode-btn.selected {
+      border-color: rgba(215, 185, 111, 0.45);
+      background: linear-gradient(90deg, rgba(215, 185, 111, 0.12) 0%, rgba(215, 185, 111, 0.03) 100%);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(215, 185, 111, 0.06);
+    }
+    .home-mode-btn.selected .home-mode-name { color: #f8fafc; }
+    .home-mode-btn.selected .home-elo-badge {
+      background: rgba(215, 185, 111, 0.18);
+      color: #ffd700;
+      border-color: rgba(215, 185, 111, 0.4);
+    }
+
+    /* Stockfish unique grandmaster theme */
+    .home-mode-btn[data-mode="ai-stockfish"].selected {
+      border-color: rgba(0, 240, 255, 0.5);
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.12) 0%, rgba(0, 240, 255, 0.02) 100%);
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.15), inset 0 0 12px rgba(0, 240, 255, 0.08);
+    }
+    .home-mode-btn[data-mode="ai-stockfish"].selected .home-mode-icon-box {
+      background: rgba(0, 240, 255, 0.18);
+      border-color: rgba(0, 240, 255, 0.5);
+      color: #00f0ff;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+    .home-mode-btn[data-mode="ai-stockfish"].selected .home-mode-name { color: #00f0ff; }
+    .home-mode-btn[data-mode="ai-stockfish"].selected .home-elo-badge {
+      background: rgba(0, 240, 255, 0.2);
+      color: #00f0ff;
+      border-color: rgba(0, 240, 255, 0.5);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Color Selection */
+    .home-color-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
     }
 
     .home-color-btn {
-      padding: 10px 8px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.03);
-      color: #c8c4ba;
+      padding: 7px 6px;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.025);
+      color: #cbd5e1;
       font-family: 'Inter', sans-serif;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       text-align: center;
       -webkit-appearance: none;
+    }
+
+    .home-color-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
     }
 
     .home-color-btn:active { transform: scale(0.96); }
 
     .home-color-btn.selected {
-      background: rgba(215, 185, 111, 0.12);
-      border-color: rgba(215, 185, 111, 0.45);
-      color: #f6e05e;
-      box-shadow: 0 0 12px rgba(215, 185, 111, 0.15);
+      background: linear-gradient(135deg, rgba(215, 185, 111, 0.2) 0%, rgba(215, 185, 111, 0.06) 100%);
+      border-color: rgba(215, 185, 111, 0.55);
+      color: #ffd700;
+      box-shadow: 0 0 14px rgba(215, 185, 111, 0.2);
     }
 
+    /* Play Button */
     .play-btn {
       width: 100%;
-      padding: 16px;
+      padding: 12px 20px;
       border: none;
       border-radius: 14px;
-      background: linear-gradient(135deg, #d4b262 0%, #b89545 100%);
-      color: #1a1305;
+      background: linear-gradient(135deg, #ffd700 0%, #f59e0b 50%, #d97706 100%);
+      color: #1a0f00;
       font-family: 'Outfit', sans-serif;
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: 1px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 6px 24px rgba(180, 149, 69, 0.25);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255,255,255,0.4);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       margin-top: 2px;
-      min-height: 52px;
+      min-height: 48px;
       -webkit-appearance: none;
+      position: relative;
+      overflow: hidden;
     }
 
-    .play-btn:active { transform: scale(0.97); box-shadow: 0 3px 12px rgba(180,149,69,0.2); }
+    .play-btn:hover {
+      transform: translateY(-1.5px);
+      filter: brightness(1.06);
+      box-shadow: 0 10px 28px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .play-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+    }
+
+    .home-footer-note {
+      font-size: 10px;
+      color: #475569;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
     /* ============================================================
        GAME SCREEN
@@ -1670,8 +1784,8 @@
       .mobile-bottom-bar .btn { min-height: 38px; font-size: 9px; }
     }
 
-    /* Landscape / Short Height mobile viewport (< 500px) */
-    @media (max-height: 500px) {
+    /* Landscape / Short Height mobile viewport (< 520px) */
+    @media (max-height: 520px) {
       .game-topbar { padding: 4px 8px; }
       .game-topbar .brand h1 { display: none; }
       .mobile-bottom-bar { padding: 4px 8px; }
@@ -1686,12 +1800,12 @@
         padding-bottom: max(8px, env(safe-area-inset-bottom));
       }
       .home-content {
-        max-width: 600px;
+        max-width: 680px;
         display: grid !important;
-        grid-template-columns: 1fr 1.15fr !important;
-        grid-template-rows: auto auto auto auto auto !important;
-        column-gap: 20px !important;
-        row-gap: 4px !important;
+        grid-template-columns: 1fr 1.25fr !important;
+        grid-template-rows: auto auto auto auto auto auto !important;
+        column-gap: 16px !important;
+        row-gap: 3px !important;
         align-items: center !important;
         justify-content: center !important;
       }
@@ -1701,56 +1815,71 @@
         justify-self: center;
         animation: none !important;
         transform: none !important;
-        margin-bottom: 2px;
+        width: 24px;
+        height: 24px;
+        margin-bottom: 0;
       }
       .home-title {
         grid-column: 1;
         grid-row: 2;
-        font-size: 24px !important;
+        font-size: 22px !important;
         letter-spacing: 2px !important;
         margin: 0 !important;
       }
       .home-subtitle {
         grid-column: 1;
         grid-row: 3;
-        font-size: 10px !important;
+        font-size: 9.5px !important;
         letter-spacing: 2px !important;
         margin: 0 !important;
       }
       .home-divider {
         grid-column: 1;
         grid-row: 4;
-        margin: 2px 0 !important;
-        width: 60px !important;
+        margin: 2px auto !important;
+        width: 50px !important;
+      }
+      #homeColorCard {
+        grid-column: 1;
+        grid-row: 5;
+        padding: 6px 8px !important;
+        margin: 0 !important;
+      }
+      #homeColorCard .home-color-btn {
+        padding: 4px !important;
+        min-height: 34px !important;
+        font-size: 11px !important;
       }
       .play-btn {
         grid-column: 1;
-        grid-row: 5;
-        margin-top: 4px !important;
-        padding: 10px !important;
-        min-height: 38px !important;
-        font-size: 14px !important;
+        grid-row: 6;
+        margin-top: 2px !important;
+        padding: 8px !important;
+        min-height: 36px !important;
+        font-size: 13.5px !important;
         width: 100%;
       }
-      .home-mode-card {
+      .home-mode-card:not(#homeColorCard) {
         grid-column: 2;
-        grid-row: 1 / span 5;
-        padding: 10px !important;
-        gap: 6px !important;
+        grid-row: 1 / span 6;
+        padding: 8px 10px !important;
+        gap: 4px !important;
         width: 100%;
         margin: 0 !important;
       }
       .home-mode-btn {
-        padding: 8px 10px !important;
-        min-height: 40px !important;
-        font-size: 13px !important;
+        padding: 5px 8px !important;
+        min-height: 36px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
       }
       .home-mode-btn .mode-icon-wrap {
-        width: 26px !important;
-        height: 26px !important;
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 6px !important;
       }
       .home-mode-btn .mode-info small {
-        font-size: 10px !important;
+        font-size: 9.5px !important;
       }
     }
   </style>
@@ -1792,83 +1921,134 @@
   <div id="homeScreen" class="screen active">
     <div class="home-bg-grid"></div>
     <div class="home-content">
-      <span class="icon icon-3xl home-crown"><svg><use href="#ico-crown"/></svg></span>
-      <h1 class="home-title">CHESS ROYALE</h1>
-      <p class="home-subtitle">Premium 3D Chess</p>
-      <div class="home-divider"></div>
-
-      <div class="home-mode-card">
-          <button class="home-mode-btn selected" data-mode="ai-stockfish">
-            <span class="mode-icon-wrap" style="background:rgba(0,240,255,0.12);border-color:rgba(0,240,255,0.35);"><span class="icon icon-lg" style="color:#00f0ff;"><svg><use href="#ico-bolt"/></svg></span></span>
-            <span class="mode-info">
-              <span style="color:#00f0ff;font-weight:700;">Stockfish ⚡ (3500)</span>
-              <small style="color:#6ee7b7;">Local Engine • Ultra Grandmaster</small>
-            </span>
-          </button>
-          <button class="home-mode-btn" data-mode="ai-master">
-            <span class="mode-icon-wrap"><span class="icon icon-lg" style="color:#d4b262;"><svg><use href="#ico-crown"/></svg></span></span>
-            <span class="mode-info">
-              <span style="color:#e8d5a3;font-weight:700;">Master AI 👑</span>
-              <small style="color:#d4b262;">PeSTO positional engine & search</small>
-            </span>
-          </button>
-          <button class="home-mode-btn" data-mode="ai-hard">
-            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-brain"/></svg></span></span>
-            <span class="mode-info">
-              <span>Hard AI</span>
-              <small>Sharp tactical & aggressive</small>
-            </span>
-          </button>
-          <button class="home-mode-btn" data-mode="ai-medium">
-            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-chess-piece"/></svg></span></span>
-            <span class="mode-info">
-              <span>Medium AI</span>
-              <small>Balanced tactical play</small>
-            </span>
-          </button>
-          <button class="home-mode-btn" data-mode="ai-easy">
-            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-robot"/></svg></span></span>
-            <span class="mode-info">
-              <span>Easy AI</span>
-              <small>Casual & beginner friendly</small>
-            </span>
-          </button>
-          <button class="home-mode-btn" data-mode="pvp">
-            <span class="mode-icon-wrap"><span class="icon icon-lg"><svg><use href="#ico-users"/></svg></span></span>
-            <span class="mode-info">
-              <span>Pass & Play</span>
-              <small>Play with a friend</small>
-            </span>
-          </button>
+      <div class="home-header">
+        <div class="home-crown-badge">
+          <span class="icon icon-2xl"><svg><use href="#ico-crown"/></svg></span>
         </div>
+        <h1 class="home-title">CHESS ROYALE</h1>
+        <span class="home-badge-tag">3D Grand Championship</span>
+      </div>
+
+      <!-- Mode Selection Card -->
+      <div class="home-card">
+        <div class="home-card-header">
+          <span class="home-card-title">Select Mode</span>
+          <span style="font-size:10px;color:#00f0ff;font-weight:700;">⚡ Engine Ready</span>
+        </div>
+
+        <button class="home-mode-btn selected" data-mode="ai-stockfish">
+          <div class="home-mode-left">
+            <div class="home-mode-icon-box" style="color:#00f0ff;background:rgba(0,240,255,0.12);border-color:rgba(0,240,255,0.35);">
+              <span class="icon icon-lg"><svg><use href="#ico-bolt"/></svg></span>
+            </div>
+            <div class="home-mode-text">
+              <span class="home-mode-name" style="color:#00f0ff;">Stockfish</span>
+              <span class="home-mode-desc">World Champion Engine • Deep Search</span>
+            </div>
+          </div>
+          <span class="home-elo-badge" style="background:rgba(0,240,255,0.18);color:#00f0ff;border-color:rgba(0,240,255,0.4);">3500 ELO</span>
+        </button>
+
+        <button class="home-mode-btn" data-mode="ai-master">
+          <div class="home-mode-left">
+            <div class="home-mode-icon-box" style="color:#ffd700;">
+              <span class="icon icon-lg"><svg><use href="#ico-crown"/></svg></span>
+            </div>
+            <div class="home-mode-text">
+              <span class="home-mode-name">Grandmaster</span>
+              <span class="home-mode-desc">Positional Mastery & Strategic Search</span>
+            </div>
+          </div>
+          <span class="home-elo-badge">2400 ELO</span>
+        </button>
+
+        <button class="home-mode-btn" data-mode="ai-hard">
+          <div class="home-mode-left">
+            <div class="home-mode-icon-box" style="color:#f43f5e;">
+              <span class="icon icon-lg"><svg><use href="#ico-brain"/></svg></span>
+            </div>
+            <div class="home-mode-text">
+              <span class="home-mode-name">Master</span>
+              <span class="home-mode-desc">Aggressive Tactics & Combinations</span>
+            </div>
+          </div>
+          <span class="home-elo-badge">1900 ELO</span>
+        </button>
+
+        <button class="home-mode-btn" data-mode="ai-medium">
+          <div class="home-mode-left">
+            <div class="home-mode-icon-box" style="color:#38bdf8;">
+              <span class="icon icon-lg"><svg><use href="#ico-chess-piece"/></svg></span>
+            </div>
+            <div class="home-mode-text">
+              <span class="home-mode-name">Challenger</span>
+              <span class="home-mode-desc">Balanced Tournament Club Player</span>
+            </div>
+          </div>
+          <span class="home-elo-badge">1400 ELO</span>
+        </button>
+
+        <button class="home-mode-btn" data-mode="ai-easy">
+          <div class="home-mode-left">
+            <div class="home-mode-icon-box" style="color:#34d399;">
+              <span class="icon icon-lg"><svg><use href="#ico-pawn"/></svg></span>
+            </div>
+            <div class="home-mode-text">
+              <span class="home-mode-name">Beginner</span>
+              <span class="home-mode-desc">Casual Friendly • Great for Learning</span>
+            </div>
+          </div>
+          <span class="home-elo-badge">800 ELO</span>
+        </button>
+
+        <button class="home-mode-btn" data-mode="pvp">
+          <div class="home-mode-left">
+            <div class="home-mode-icon-box" style="color:#a855f7;">
+              <span class="icon icon-lg"><svg><use href="#ico-users"/></svg></span>
+            </div>
+            <div class="home-mode-text">
+              <span class="home-mode-name">Pass & Play</span>
+              <span class="home-mode-desc">Local 2-Player Match on Same Device</span>
+            </div>
+          </div>
+          <span class="home-elo-badge">2 PLAYERS</span>
+        </button>
       </div>
 
       <!-- Play As Side Selection -->
-      <div class="home-mode-card" id="homeColorCard" style="margin-top: 4px;">
-        <span class="home-mode-label">Play As</span>
-        <div class="home-color-options">
+      <div class="home-card" id="homeColorCard">
+        <div class="home-card-header">
+          <span class="home-card-title">Choose Your Side</span>
+        </div>
+        <div class="home-color-grid">
           <button class="home-color-btn selected" data-color="white" title="Play as White (Moves First)">
-            <span style="font-size:22px;line-height:1;">♔</span>
+            <span style="font-size:20px;line-height:1;">♔</span>
             <span>White</span>
-            <small style="font-size:9.5px;color:#718096;font-weight:500;">Moves 1st</small>
+            <small style="font-size:9.5px;color:#64748b;font-weight:500;">Moves 1st</small>
           </button>
           <button class="home-color-btn" data-color="random" title="Random Side">
-            <span style="font-size:20px;line-height:1;">🎲</span>
+            <span style="font-size:18px;line-height:1;">🎲</span>
             <span>Random</span>
-            <small style="font-size:9.5px;color:#718096;font-weight:500;">50 / 50</small>
+            <small style="font-size:9.5px;color:#64748b;font-weight:500;">50 / 50</small>
           </button>
-          <button class="home-color-btn" data-color="black" title="Play as Black (AI Moves First)">
-            <span style="font-size:22px;line-height:1;">♚</span>
+          <button class="home-color-btn" data-color="black" title="Play as Black (Opponent Moves First)">
+            <span style="font-size:20px;line-height:1;">♚</span>
             <span>Black</span>
-            <small style="font-size:9.5px;color:#718096;font-weight:500;">Moves 2nd</small>
+            <small style="font-size:9.5px;color:#64748b;font-weight:500;">Moves 2nd</small>
           </button>
         </div>
       </div>
 
       <button class="play-btn" id="playBtn">
         <span class="icon icon-lg"><svg><use href="#ico-play"/></svg></span>
-        Play
+        START GAME
       </button>
+
+      <div class="home-footer-note">
+        <span>⚡ Real-time 3D Engine</span>
+        <span>•</span>
+        <span>100% Offline Capable</span>
+      </div>
     </div>
   </div>
 
@@ -1902,11 +2082,11 @@
           <span class="icon icon-md"><svg><use href="#ico-scroll"/></svg></span>
         </button>
         <select id="modeSelect" class="mode-select" title="Difficulty Mode">
-          <option value="pvp">PvP</option>
-          <option value="ai-easy">Easy</option>
-          <option value="ai-medium">Medium</option>
-          <option value="ai-hard">Hard</option>
-          <option value="ai-master">Master 👑</option>
+          <option value="pvp">Pass & Play (2P)</option>
+          <option value="ai-easy">Beginner (800)</option>
+          <option value="ai-medium">Challenger (1400)</option>
+          <option value="ai-hard">Master (1900)</option>
+          <option value="ai-master">Grandmaster 👑 (2400)</option>
           <option value="ai-stockfish" selected>Stockfish ⚡ (3500)</option>
         </select>
         <select id="colorSelect" class="mode-select color-select" title="Play As (Side)">
@@ -2157,10 +2337,12 @@
     document.getElementById('playBtn').addEventListener('click', () => {
       const modeSelect = document.getElementById('modeSelect');
       const colorSelect = document.getElementById('colorSelect');
-      if (modeSelect) modeSelect.value = selectedMode;
       if (colorSelect) colorSelect.value = selectedColor;
+      if (modeSelect) {
+        modeSelect.value = selectedMode;
+        modeSelect.dispatchEvent(new Event('change'));
+      }
       showScreen('gameScreen');
-      if (modeSelect) modeSelect.dispatchEvent(new Event('change'));
       setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
     });
 

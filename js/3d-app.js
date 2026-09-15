@@ -3223,6 +3223,9 @@ function animate2DMove(move, callback) {
   }, 470);
 }
 
+let aiTimeoutId = null;
+let aiPreMoveTimeoutId = null;
+
 function triggerAI() {
   if (
     aiThinking ||
@@ -3239,22 +3242,25 @@ function triggerAI() {
     return;
   }
 
+  clearTimeout(aiTimeoutId);
+  clearTimeout(aiPreMoveTimeoutId);
+
   aiThinking = true;
   const isStockfish = mode === 'ai-stockfish';
   const engineLabel = isStockfish
     ? 'Stockfish ⚡'
     : (mode === 'ai-master'
-      ? 'Master AI 👑'
+      ? 'Grandmaster 👑'
       : (mode === 'ai-hard'
-        ? 'Hard AI'
-        : (mode === 'ai-medium' ? 'Medium AI' : 'Easy AI')));
+        ? 'Master'
+        : (mode === 'ai-medium' ? 'Challenger' : 'Beginner')));
 
   statusText.textContent = `${engineLabel} (${aiColor === 'white' ? 'White' : 'Black'}) is thinking...`;
   render();
 
-  const delay = isStockfish ? 220 : (mode === 'ai-hard' || mode === 'ai-master' ? 320 : 220);
+  const delay = isStockfish ? 220 : (mode === 'ai-hard' || mode === 'ai-master' ? 300 : 200);
 
-  setTimeout(async () => {
+  aiTimeoutId = setTimeout(async () => {
     if (game.gameOver || game.currentPlayer !== aiColor) {
       aiThinking = false;
       render();
@@ -3273,7 +3279,7 @@ function triggerAI() {
       move = ai.getBestMove(game, aiColor);
     }
 
-    if (!move) {
+    if (!move || game.currentPlayer !== aiColor) {
       aiThinking = false;
       render();
       return;
@@ -3283,8 +3289,8 @@ function triggerAI() {
     game.lastMove = move;
     render();
 
-    // Pause 260ms so player clearly sees the pre-move highlight
-    setTimeout(() => {
+    // Pause 200ms so player clearly sees the pre-move highlight
+    aiPreMoveTimeoutId = setTimeout(() => {
       if (is2DView) {
         animate2DMove(move, () => {
           game.makeMove(move);
@@ -3292,7 +3298,7 @@ function triggerAI() {
           render(move);
         });
       } else {
-        const fromGroup = squares[move.fromRow][move.fromCol].group;
+        const fromGroup = squares[move.fromRow]?.[move.fromCol]?.group;
 
         if (!fromGroup) {
           game.makeMove(move);
@@ -3307,7 +3313,7 @@ function triggerAI() {
           render(move);
         });
       }
-    }, 260);
+    }, 200);
   }, delay);
 }
 
@@ -3316,27 +3322,25 @@ function triggerAI() {
 // ============================================================
 
 function resolvePlayerColor() {
+  if (colorSelect && colorSelect.value) {
+    playerColor = colorSelect.value;
+  }
   if (playerColor === 'random') {
     return Math.random() < 0.5 ? 'white' : 'black';
   }
-  return playerColor;
+  return playerColor || 'white';
 }
 
 function startNewGame() {
-  if (animating) return;
+  clearTimeout(aiTimeoutId);
+  clearTimeout(aiPreMoveTimeoutId);
+  animating = false;
+  aiThinking = false;
   activePlayerColor = resolvePlayerColor();
   game.reset();
-  aiThinking = false;
   lastShownGameResult = null;
   hideGameResultModal();
   render();
-
-  // If in vs AI mode and player is Black, White AI moves first!
-  if (mode.startsWith('ai') && activePlayerColor === 'black') {
-    setTimeout(() => {
-      triggerAI();
-    }, 450);
-  }
 }
 
 newGameBtn.addEventListener('click', startNewGame);
@@ -3543,10 +3547,10 @@ function render2DBoard() {
   if (topName) {
     if (mode.startsWith('ai')) {
       const aiLabels = {
-        'ai-easy': 'Easy AI',
-        'ai-medium': 'Medium AI',
-        'ai-hard': 'Hard AI',
-        'ai-master': 'Master AI 👑',
+        'ai-easy': 'Beginner (800)',
+        'ai-medium': 'Challenger (1400)',
+        'ai-hard': 'Master (1900)',
+        'ai-master': 'Grandmaster 👑 (2400)',
         'ai-stockfish': 'Stockfish ⚡ (3500)'
       };
       const label = aiLabels[mode] || 'AI';
