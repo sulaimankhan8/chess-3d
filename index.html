@@ -458,14 +458,15 @@
       left: 0;
       right: 0;
       z-index: 30;
-      height: calc(46px + env(safe-area-inset-top));
-      padding: 0 10px;
-      padding-top: env(safe-area-inset-top));
+      height: 48px;
+      height: calc(48px + env(safe-area-inset-top));
+      padding: 0 12px;
+      padding-top: env(safe-area-inset-top);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 6px;
-      background: rgba(9, 13, 22, 0.94);
+      background: rgba(9, 13, 22, 0.96);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -765,8 +766,9 @@
        ============================================================ */
     .board2d-wrap {
       position: fixed;
-      top: calc(46px + env(safe-area-inset-top));
-      bottom: calc(56px + env(safe-area-inset-bottom));
+      top: 48px;
+      top: calc(48px + env(safe-area-inset-top));
+      bottom: 0;
       left: 0;
       right: 0;
       z-index: 15;
@@ -776,15 +778,13 @@
       pointer-events: auto;
       background: radial-gradient(circle at 50% 40%, #111728 0%, #070a10 80%);
       overflow: hidden;
-      padding: 6px;
+      padding: 6px 12px;
       box-sizing: border-box;
     }
 
-    @media (min-width: 1101px) {
+    @media (max-width: 1100px) {
       .board2d-wrap {
-        bottom: 0;
-        right: 0;
-        left: 0;
+        bottom: calc(54px + env(safe-area-inset-bottom));
       }
     }
 
@@ -793,12 +793,19 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      width: min(94vw, min(calc(100dvh - 165px), 520px));
-      max-width: 520px;
+      gap: 4px;
+      width: min(92vw, min(calc(100dvh - 206px), 480px));
+      max-width: 480px;
       box-sizing: border-box;
       user-select: none;
       -webkit-user-select: none;
+    }
+
+    @media (max-width: 1100px) {
+      .board2d-layout {
+        width: min(94vw, min(calc(100dvh - 248px), 440px));
+        max-width: 440px;
+      }
     }
 
     /* Player Strip (Opponent Top / Player Bottom) */
@@ -807,10 +814,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: rgba(16, 22, 36, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 3px 10px;
+      min-height: 30px;
+      border-radius: 7px;
+      background: rgba(16, 22, 36, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       box-sizing: border-box;
       transition: all 0.2s ease;
     }
@@ -824,36 +832,36 @@
     .player-strip-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       min-width: 0;
     }
 
     .strip-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
       background: #1c2438;
       border: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 14px;
       flex-shrink: 0;
     }
 
     .strip-details {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
       min-width: 0;
     }
 
     .strip-name {
       font-family: 'Outfit', sans-serif;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #e2e8f0;
-      line-height: 1;
+      line-height: 1.1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1092,14 +1100,14 @@
        ============================================================ */
     .board2d-details-card {
       width: 100%;
-      background: rgba(16, 22, 36, 0.88);
+      background: rgba(16, 22, 36, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 7px 10px;
+      border-radius: 7px;
+      padding: 5px 9px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 3px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
 
@@ -1113,8 +1121,8 @@
     .board2d-status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
+      gap: 5px;
+      font-size: 11px;
       font-weight: 700;
       color: #e2e8f0;
     }
@@ -1129,12 +1137,12 @@
     }
 
     .board2d-moves-badge {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 600;
       color: #94a3b8;
       background: rgba(255, 255, 255, 0.05);
-      padding: 2px 7px;
-      border-radius: 6px;
+      padding: 1px 6px;
+      border-radius: 5px;
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
@@ -1142,14 +1150,14 @@
     .board2d-moves-ribbon {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       overflow-x: auto;
       overflow-y: hidden;
       white-space: nowrap;
-      padding: 2px 0;
+      padding: 1px 0;
       scrollbar-width: none;
       -ms-overflow-style: none;
-      min-height: 22px;
+      min-height: 20px;
     }
     .board2d-moves-ribbon::-webkit-scrollbar { display: none; }
 
@@ -1227,25 +1235,28 @@
        ============================================================ */
     .stats-panel {
       position: fixed;
-      top: 50%;
+      top: calc(48px + (100dvh - 48px) / 2);
       transform: translateY(-50%);
-      width: 220px;
-      max-height: min(540px, calc(100vh - 160px));
-      overflow: hidden;
-      z-index: 25;
+      width: 210px;
+      max-height: min(460px, calc(100dvh - 80px));
+      overflow-y: auto;
+      z-index: 20;
       pointer-events: auto;
       display: none;
       flex-direction: column;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 14px;
-      background: #111522;
-      border: 1px solid #1e2638;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(15, 19, 32, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+      box-sizing: border-box;
     }
 
-    .stats-panel-left { left: 12px; }
-    .stats-panel-right { right: 12px; }
+    .stats-panel-left { left: 16px; }
+    .stats-panel-right { right: 16px; }
 
     /* Universal Details & History Modal Overlay */
     .stats-panel.mobile-active {
