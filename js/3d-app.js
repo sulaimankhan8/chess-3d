@@ -1529,8 +1529,8 @@ function showGameResultModal() {
   const gameResultCard = document.getElementById('gameResultCard');
   const isCheckmate = game.gameResult === 'checkmate';
   const winnerName = game.winner === 'white' ? 'White' : 'Black';
-  const humanWon = mode.startsWith('ai') && game.winner === 'white';
-  const humanLost = mode.startsWith('ai') && game.winner === 'black';
+  const humanWon = mode.startsWith('ai') && game.winner === activePlayerColor;
+  const humanLost = mode.startsWith('ai') && game.winner !== activePlayerColor && game.winner !== null;
 
   // Remove old result classes
   if (gameResultCard) {
@@ -1559,7 +1559,7 @@ function showGameResultModal() {
     }
 
     // Confetti on win
-    if (humanWon || !mode.startsWith('ai')) {
+    if (humanWon || (!mode.startsWith('ai') && game.winner)) {
       if (typeof window.spawnConfetti === 'function') {
         window.spawnConfetti();
       }
@@ -2073,15 +2073,12 @@ function animateMove(
   ) {
 
     const piece =
-      game.board[
-        move.toRow
-      ][
-        move.toCol
-      ];
+      game.board[move.fromRow]?.[move.fromCol] ||
+      game.board[move.toRow]?.[move.toCol];
 
     if (
-      piece !==
-      PIECES.EMPTY
+      piece &&
+      piece !== PIECES.EMPTY
     ) {
 
       const newGroup =
@@ -2154,7 +2151,8 @@ function animateMove(
   let capturedRow = move.toRow;
   let capturedCol = move.toCol;
   if (move.enPassant) {
-    capturedRow = (move.fromRow === 6 || game.board[move.toRow][move.toCol] === PIECES.WP) ? move.toRow + 1 : move.toRow - 1;
+    const movingPiece = game.board[move.fromRow]?.[move.fromCol];
+    capturedRow = movingPiece === PIECES.WP ? move.toRow + 1 : move.toRow - 1;
     capturedGroup = squares[capturedRow]?.[capturedCol]?.group;
   }
 
@@ -3505,6 +3503,21 @@ const CBURNETT_SVGS = {
   [PIECES.BK]: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg'
 };
 
+const PIECE_UNICODE = {
+  [PIECES.WP]: '♙',
+  [PIECES.WN]: '♘',
+  [PIECES.WB]: '♗',
+  [PIECES.WR]: '♖',
+  [PIECES.WQ]: '♕',
+  [PIECES.WK]: '♔',
+  [PIECES.BP]: '♟',
+  [PIECES.BN]: '♞',
+  [PIECES.BB]: '♝',
+  [PIECES.BR]: '♜',
+  [PIECES.BQ]: '♛',
+  [PIECES.BK]: '♚'
+};
+
 let is2DView = true;
 const viewToggleBtn = document.getElementById('viewToggleBtn');
 const viewToggleIcon = document.getElementById('viewToggleIcon');
@@ -3741,7 +3754,8 @@ function render2DBoard() {
       if (piece && CBURNETT_SVGS[piece]) {
         const pieceEl = document.createElement('div');
         pieceEl.className = 'piece2d';
-        pieceEl.innerHTML = `<img src="${CBURNETT_SVGS[piece]}" alt="piece" style="width:100%;height:100%;pointer-events:none;" />`;
+        const unicodeSymbol = PIECE_UNICODE[piece] || '';
+        pieceEl.innerHTML = `<img src="${CBURNETT_SVGS[piece]}" alt="${unicodeSymbol}" style="width:100%;height:100%;pointer-events:none;" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\\'font-size:36px;line-height:1;display:flex;align-items:center;justify-content:center;height:100%;color:${(piece >= 1 && piece <= 6) ? '#f8fafc' : '#0f172a'};filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6));\\'>${unicodeSymbol}</span>';" />`;
         sq.appendChild(pieceEl);
       }
 
@@ -3825,7 +3839,7 @@ function render2DBoard() {
     } else if (game.gameResult === 'check') {
       b2dStatusText.textContent = `${isWhiteTurn ? 'White' : 'Black'} in CHECK!`;
       if (b2dStatusDot) b2dStatusDot.style.background = '#ef4444';
-    } else if (aiThinking && !isWhiteTurn) {
+    } else if (aiThinking && (!mode.startsWith('ai') || game.currentPlayer !== activePlayerColor)) {
       b2dStatusText.textContent = 'AI Thinking...';
       if (b2dStatusDot) b2dStatusDot.style.background = '#60a5fa';
     } else {
