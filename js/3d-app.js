@@ -2779,7 +2779,7 @@ function render(
             .material
             .emissive
             .set(
-              0x44ff99
+              0xff9433
             );
 
           squares[
@@ -2790,7 +2790,7 @@ function render(
             .mesh
             .material
             .emissiveIntensity =
-            0.25;
+            0.32;
         }
 
         if (
@@ -2809,7 +2809,7 @@ function render(
             .material
             .emissive
             .set(
-              0x44ff99
+              0xff9433
             );
 
           squares[
@@ -2820,7 +2820,7 @@ function render(
             .mesh
             .material
             .emissiveIntensity =
-            0.3;
+            0.38;
         }
       }
     }
@@ -3732,6 +3732,8 @@ function render2DBoard() {
         sq.classList.add('selected');
       } else if (key === lastMoveFrom || key === lastMoveTo) {
         sq.classList.add('last-move');
+        if (key === lastMoveTo) sq.classList.add('last-move-to');
+        if (key === lastMoveFrom) sq.classList.add('last-move-from');
       } else if (key === checkSquare) {
         sq.classList.add('check');
       }
